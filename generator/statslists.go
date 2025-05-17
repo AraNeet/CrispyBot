@@ -1,4 +1,4 @@
-package generator
+package roller
 
 type WeightedOption struct {
 	Value  string
