@@ -12,7 +12,7 @@ var (
 	VitalityValue = map[string]float64{
 		"Helpless-": 0,
 		"Helpless":  45.75,
-		"frail":     85.75,
+		"Frail":     85.75,
 		"Weak":      110,
 		"Average":   127.5,
 		"Heathly":   145.5,
@@ -107,10 +107,11 @@ var (
 		"Swift":             {{"Speed": 25}},
 		"Big Boned":         {{"Vitality": 25, "Strength": 25, "Durability": 25}},
 		"Quick Thinker":     {{"Intelligence": 25}},
+		"None":              {{}},
 	}
 
 	WeaknessValues = map[string][]map[string]float64{
-		"Fragile Bones":       {{"Vitality": 25, "Durability": 25}},
+		"Fragile Bone":        {{"Vitality": 25, "Durability": 25}},
 		"STD":                 {{"Strength": 25}},
 		"Cancer":              {{"Strength": 25}},
 		"Delayed Reaction":    {{"Speed": 25}},
@@ -126,6 +127,7 @@ var (
 		"Claustrophobia":      {{"Speed": 50}},
 		"Paranoid":            {{"SkillLevel": 25, "Vitality": 50}},
 		"Cursed":              {{"Vitality": 75, "Strength": 75, "Intelligence": 75, "Durability": 75, "Speed": 75, "SkillLevel": 75, "ManaFlow": 75}},
+		"None":                {{}},
 	}
 
 	RaceValues = map[string][]map[string][]map[string]float64{
@@ -148,7 +150,7 @@ var (
 		"Fairy":        {{"Buff": {{"Speed": 75, "ManaFlow": 75}}, "Weakness": {{"Height": 75}}}},
 		"Cyclops":      {{"Buff": {{"Height": 75, "Strength": 50}}, "Weakness": {{"Intelligence": 50}}}},
 		"Druid":        {{"Buff": {{"ManaFlow": 75, "Vitality": 50}}, "Weakness": {{"Durability": 75}}}},
-		"God/Goddess":  {{"Buff": {{"Strength": 75, "Vitality": 75, "Intelligence": 75, "Durability": 75, "Speed": 75, "SkillLevel": 75, "ManaFlow": 75, "Height": 75}}}},
+		"God":          {{"Buff": {{"Strength": 75, "Vitality": 75, "Intelligence": 75, "Durability": 75, "Speed": 75, "SkillLevel": 75, "ManaFlow": 75, "Height": 75}}}},
 		"Minotaur":     {{"Buff": {{"Vitality": 50, "Speed": 50, "Height": 25}}}},
 		"Wizard/Witch": {{"Buff": {{"ManaFlow": 75, "SkillLevel": 50, "Intelligence": 50}}, "Weakness": {{"Durability": 75}}}},
 		"Vampire":      {{"Buff": {{"Strength": 50, "Vitality": 50, "Speed": 50, "ManaFlow": 75}}}},
@@ -158,5 +160,7 @@ var (
 		"Harpy":        {{"Buff": {{"Strength": 50, "Speed": 50, "Vitality": 25}}, "Weakness": {{"Durability": 50}}}},
 		"Skeleton":     {{"Weakness": {{"Strength": 25, "Vitality": 25, "Intelligence": 25, "Durability": 25, "Speed": 25, "SkillLevel": 25, "ManaFlow": 25, "Height": 25}}}},
 		"Djinn":        {{"Buff": {{"Strength": 50, "Vitality": 50, "Intelligence": 50, "Durability": 50, "Speed": 50, "SkillLevel": 50, "ManaFlow": 50, "Height": 50}}}},
+		"Humans":       {{"Buff": {{"Vitality": 25, "Intelligence": 25}}}},
+		"Drawf":        {{"Buff": {{"Durability": 75, "SkillLevel": 75}}, "Weakness": {{"Speed": 50}}}},
 	}
 )
