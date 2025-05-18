@@ -59,7 +59,7 @@ var (
 		"Uncommon":  {"Hexed", "Enchanted"},
 		"Rare":      {"Lowly", "Conjuring"},
 		"Epic":      {"Mana-Less", "Overflowing"},
-		"Legandary": {"No Mana", "Overflowing+"},
+		"Legandary": {"No-Mana", "Overflowing+"},
 	}
 
 	SkillLevelRarity = map[string][]string{
