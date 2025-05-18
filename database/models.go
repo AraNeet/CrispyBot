@@ -24,7 +24,7 @@ type User struct {
 	Attributes - Character main addition Attributes or traits. EXM: Race, Element, and Weakness
 */
 type Character struct {
-	Owner      string      `json:"owner,omitempty"`
+	ID         string      `json:"owner,omitempty"`
 	Stats      StatsSheets `json:"statsSheets"`
 	Attributes Attributes  `json:"attributes"`
 }

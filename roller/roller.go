@@ -19,7 +19,7 @@ func GenerateCharacter(ownerID string) database.Character {
 
 	// Create the character
 	character := database.Character{
-		Owner:      ownerID,
+		ID:         ownerID,
 		Stats:      stats,
 		Attributes: attributes,
 	}
