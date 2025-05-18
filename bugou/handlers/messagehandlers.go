@@ -181,7 +181,7 @@ func createCharacterEmbed(character database.Character, author *discordgo.User) 
 			},
 		},
 		Footer: &discordgo.MessageEmbedFooter{
-			Text: fmt.Sprintf("Character ID: %s", character),
+			Text: fmt.Sprintf("Character ID: %s", character.ID),
 		},
 	}
 
