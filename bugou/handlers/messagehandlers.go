@@ -59,6 +59,7 @@ func MessageCreate(session *discordgo.Session, message *discordgo.MessageCreate)
 
 func handleTestsCommand(session *discordgo.Session, message *discordgo.MessageCreate) {
 	db := database.Connect()
+	defer db.Close()
 
 	user, err := database.CreateUser(db, message.Author.ID)
 	if err != nil {
@@ -68,7 +69,9 @@ func handleTestsCommand(session *discordgo.Session, message *discordgo.MessageCr
 			Color:       0x00AAFF,
 		}
 		session.ChannelMessageSendEmbed(message.ChannelID, errEmbed)
+		return
 	}
+
 	sucEmbed := &discordgo.MessageEmbed{
 		Title:       "Create message",
 		Description: user.DiscordID,
@@ -77,7 +80,13 @@ func handleTestsCommand(session *discordgo.Session, message *discordgo.MessageCr
 	session.ChannelMessageSendEmbed(message.ChannelID, sucEmbed)
 }
 
-func handleInitCommand(session *discordgo.Session, message *discordgo.MessageCreate) {}
+func handleInitCommand(session *discordgo.Session, message *discordgo.MessageCreate) {
+	// Just connect to initialize the database
+	db := database.Connect()
+	defer db.Close()
+
+	session.ChannelMessageSend(message.ChannelID, "Database initialized successfully!")
+}
 
 // sendHelpMessage sends the help message with available commands
 func sendHelpMessage(session *discordgo.Session, channelID string) {
@@ -98,6 +107,10 @@ func sendHelpMessage(session *discordgo.Session, channelID string) {
 				Name:  "!cb stats",
 				Value: "Shows your character's stats",
 			},
+			{
+				Name:  "!cb init",
+				Value: "Initializes the database",
+			},
 		},
 		Footer: &discordgo.MessageEmbedFooter{
 			Text: "CrispyBot v1.0",
@@ -111,12 +124,13 @@ func sendHelpMessage(session *discordgo.Session, channelID string) {
 func handleRollCommand(session *discordgo.Session, message *discordgo.MessageCreate) {
 	// Connect to the database
 	db := database.Connect()
+	defer db.Close()
 
 	// Check if user already has a character
 	existingChar, err := database.GetCharacterByOwner(db, message.Author.ID)
 	if err == nil {
 		// User already has a character
-		session.ChannelMessageSend(message.ChannelID, fmt.Sprintf("You already have a character named **%s**! Use `!cb stats` to see your character.", existingChar.ID))
+		session.ChannelMessageSend(message.ChannelID, fmt.Sprintf("You already have a character with ID **%s**! Use `!cb stats` to see your character.", existingChar.ID))
 		return
 	}
 
@@ -139,6 +153,7 @@ func handleRollCommand(session *discordgo.Session, message *discordgo.MessageCre
 func handleStatsCommand(session *discordgo.Session, message *discordgo.MessageCreate) {
 	// Connect to the database
 	db := database.Connect()
+	defer db.Close()
 
 	// Get the user's character
 	character, err := database.GetCharacterByOwner(db, message.Author.ID)
@@ -159,7 +174,6 @@ func createCharacterEmbed(character database.Character, author *discordgo.User) 
 	attrs := character.Attributes
 	stats := character.Stats
 
-	fmt.Println(stats)
 	// Create the embed
 	embed := &discordgo.MessageEmbed{
 		Title:       fmt.Sprintf("%s's Character", author.Username),

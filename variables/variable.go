@@ -8,4 +8,5 @@ import (
 
 var (
 	Bottoken string = os.Getenv("BOTTOKEN")
+	DB       string = os.Getenv("DB")
 )

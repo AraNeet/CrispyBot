@@ -1,41 +1,103 @@
 package database
 
 import (
-	"os"
+	"CrispyBot/variables"
+	"database/sql"
+	"fmt"
 
-	"github.com/surrealdb/surrealdb.go"
+	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
-var (
-	host          string = os.Getenv("DBHOST")
-	auth_user     string = os.Getenv("DBUSER")
-	auth_password string = os.Getenv("DBPASSWORD")
-	db_name       string = os.Getenv("DB")
-	ns            string = os.Getenv("NAMESPACE")
-)
-
-func Connect() (session *surrealdb.DB) {
-	session, err := surrealdb.New(host)
+// Connect establishes a connection to the PostgreSQL database
+func Connect() *sql.DB {
+	// Open the PostgreSQL database
+	db, err := sql.Open("postgres", variables.DB)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("failed to connect to database: %w", err))
 	}
 
-	if err = session.Use(ns, db_name); err != nil {
-		panic(err)
+	// Test the connection
+	if err = db.Ping(); err != nil {
+		panic(fmt.Errorf("failed to ping database: %w", err))
 	}
 
-	authData := &surrealdb.Auth{
-		Username: auth_user,
-		Password: auth_password,
+	// Initialize the database schema
+	if err = initializeSchema(db); err != nil {
+		panic(fmt.Errorf("failed to initialize database schema: %w", err))
 	}
-	token, err := session.SignIn(authData)
+
+	return db
+}
+
+// initializeSchema creates all necessary tables if they don't exist
+func initializeSchema(db *sql.DB) error {
+	// Create the users table
+	_, err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS users (
+			discord_id TEXT PRIMARY KEY
+		)
+	`)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("failed to create users table: %w", err)
 	}
 
-	if err := session.Authenticate(token); err != nil {
-		panic(err)
+	// Create the characters table
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS characters (
+			id TEXT PRIMARY KEY,
+			owner TEXT NOT NULL,
+			FOREIGN KEY(owner) REFERENCES users(discord_id)
+		)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create characters table: %w", err)
 	}
 
-	return session
+	// Create the stats table with a SERIAL primary key for PostgreSQL
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS stats (
+			id SERIAL PRIMARY KEY,
+			character_id TEXT NOT NULL,
+			stat_type INTEGER NOT NULL,
+			stat_name TEXT NOT NULL,
+			rarity TEXT NOT NULL,
+			value INTEGER NOT NULL,
+			FOREIGN KEY(character_id) REFERENCES characters(id)
+		)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create stats table: %w", err)
+	}
+
+	// Create the traits table with a SERIAL primary key
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS traits (
+			id SERIAL PRIMARY KEY,
+			character_id TEXT NOT NULL,
+			trait_type INTEGER NOT NULL,
+			trait_name TEXT NOT NULL,
+			rarity TEXT NOT NULL,
+			trait_category TEXT NOT NULL,
+			FOREIGN KEY(character_id) REFERENCES characters(id)
+		)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create traits table: %w", err)
+	}
+
+	// Create the trait_stat_values table with a SERIAL primary key
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS trait_stat_values (
+			id SERIAL PRIMARY KEY,
+			trait_id INTEGER NOT NULL,
+			stat_name TEXT NOT NULL,
+			value INTEGER NOT NULL,
+			FOREIGN KEY(trait_id) REFERENCES traits(id)
+		)
+	`)
+	if err != nil {
+		return fmt.Errorf("failed to create trait_stat_values table: %w", err)
+	}
+
+	return nil
 }
