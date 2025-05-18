@@ -1,7 +1,6 @@
 package main
 
 import (
-	server "CrispyBot/api"
 	"CrispyBot/bugou"
 	"fmt"
 	"os"
@@ -12,7 +11,7 @@ import (
 func main() {
 	go bugou.StartBot()
 
-	go server.StartServer()
+	// go server.StartServer()
 
 	exit := make(chan os.Signal, 1)
 	signal.Notify(exit, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)

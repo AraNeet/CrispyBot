@@ -5,16 +5,11 @@ import (
 	"CrispyBot/variables"
 	"math/rand"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // Generate a new character with random attributes
 func GenerateCharacter(ownerID string) database.Character {
 	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
-
-	// Generate character ID
-	charID := uuid.New().String()
 
 	// Generate stats
 	stats := generateStats(rng)
@@ -24,7 +19,6 @@ func GenerateCharacter(ownerID string) database.Character {
 
 	// Create the character
 	character := database.Character{
-		ID:         charID,
 		Owner:      ownerID,
 		Stats:      stats,
 		Attributes: attributes,
@@ -35,7 +29,6 @@ func GenerateCharacter(ownerID string) database.Character {
 
 // Generate random stats based on rarity
 func generateStats(rng *rand.Rand) database.StatsSheets {
-	statsID := uuid.New().String()
 
 	// Generate each stat
 	vitality := generateStat(variables.Vitality, VitalityRarity, rng)
@@ -47,7 +40,6 @@ func generateStats(rng *rand.Rand) database.StatsSheets {
 	skillLevel := generateStat(variables.SkillLevel, SkillLevelRarity, rng)
 
 	return database.StatsSheets{
-		ID:           statsID,
 		Vitality:     vitality,
 		Durability:   durability,
 		Speed:        speed,
@@ -119,7 +111,6 @@ func getStatBaseValue(statType variables.StatType, statName string) int {
 
 // Generate character attributes
 func generateAttributes(rng *rand.Rand) database.Attributes {
-	attributesID := uuid.New().String()
 
 	// Generate race trait
 	raceTrait := generateRaceTrait(rng)
@@ -140,7 +131,6 @@ func generateAttributes(rng *rand.Rand) database.Attributes {
 	xFactorTrait := generateXFactorTrait(rng)
 
 	return database.Attributes{
-		ID:        attributesID,
 		Race:      raceTrait,
 		Element:   elementTrait,
 		Trait:     extraTrait,

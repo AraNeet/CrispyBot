@@ -2,8 +2,6 @@ package bugouhandlers
 
 import (
 	"CrispyBot/database"
-	"CrispyBot/roller"
-	"fmt"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -11,6 +9,8 @@ import (
 
 const (
 	prefixCommand = "!cb"
+	initCommand   = "init"
+	testCommand   = "test"
 	helpCommand   = "help"
 	rollCommand   = "roll"
 	statCommand   = "stats"
@@ -40,16 +40,42 @@ func MessageCreate(session *discordgo.Session, message *discordgo.MessageCreate)
 
 	// Handle commands
 	switch command {
+	case testCommand:
+		handleTestsCommand(session, message)
 	case helpCommand:
 		sendHelpMessage(session, message.ChannelID)
-	case rollCommand:
-		handleRollCommand(session, message)
-	case statCommand:
-		handleStatsCommand(session, message)
+	// case rollCommand:
+	// 	handleRollCommand(session, message)
+	// case statCommand:
+	// 	handleStatsCommand(session, message)
+	// case initCommand:
+	// 	handleInitCommand(session, message)
 	default:
 		session.ChannelMessageSend(message.ChannelID, "Unknown command. Try `!cb help` for a list of commands.")
 	}
 }
+
+func handleTestsCommand(session *discordgo.Session, message *discordgo.MessageCreate) {
+	db := database.Connect()
+
+	user, err := database.CreateUser(db, message.Author.ID)
+	if err != nil {
+		errEmbed := &discordgo.MessageEmbed{
+			Title:       "Error message",
+			Description: err.Error(),
+			Color:       0x00AAFF,
+		}
+		session.ChannelMessageSendEmbed(message.ChannelID, errEmbed)
+	}
+	sucEmbed := &discordgo.MessageEmbed{
+		Title:       "Create message",
+		Description: user.DiscordID,
+		Color:       0x00AAFF,
+	}
+	session.ChannelMessageSendEmbed(message.ChannelID, sucEmbed)
+}
+
+// func handleInitCommand(session *discordgo.Session, message *discordgo.Message) {}
 
 // sendHelpMessage sends the help message with available commands
 func sendHelpMessage(session *discordgo.Session, channelID string) {
@@ -79,117 +105,117 @@ func sendHelpMessage(session *discordgo.Session, channelID string) {
 	session.ChannelMessageSendEmbed(channelID, helpEmbed)
 }
 
-// handleRollCommand generates a new character for the user
-func handleRollCommand(session *discordgo.Session, message *discordgo.MessageCreate) {
-	// Connect to the database
-	db := database.Connect()
+// // handleRollCommand generates a new character for the user
+// func handleRollCommand(session *discordgo.Session, message *discordgo.MessageCreate) {
+// 	// Connect to the database
+// 	db := database.Connect()
 
-	// Check if user already has a character
-	existingChar, err := database.GetCharacterByOwner(db, message.Author.ID)
-	if err == nil {
-		// User already has a character
-		session.ChannelMessageSend(message.ChannelID, fmt.Sprintf("You already have a character named **%s**! Use `!cb stats` to see your character.", existingChar.Owner))
-		return
-	}
+// 	// Check if user already has a character
+// 	existingChar, err := database.GetCharacterByOwner(db, message.Author.ID)
+// 	if err == nil {
+// 		// User already has a character
+// 		session.ChannelMessageSend(message.ChannelID, fmt.Sprintf("You already have a character named **%s**! Use `!cb stats` to see your character.", existingChar.Owner))
+// 		return
+// 	}
 
-	// Generate a new character
-	newCharacter := roller.GenerateCharacter(message.Author.ID)
+// 	// Generate a new character
+// 	newCharacter := roller.GenerateCharacter(message.Author.ID)
 
-	// Save to the database
-	savedChar, err := database.SaveCharacter(db, newCharacter)
-	if err != nil {
-		session.ChannelMessageSend(message.ChannelID, fmt.Sprintf("Error generating character: %v", err))
-		return
-	}
+// 	// Save to the database
+// 	savedChar, err := database.SaveCharacter(db, newCharacter)
+// 	if err != nil {
+// 		session.ChannelMessageSend(message.ChannelID, fmt.Sprintf("Error generating character: %v", err))
+// 		return
+// 	}
 
-	// Create an embed message with the character details
-	charEmbed := createCharacterEmbed(savedChar, message.Author)
-	session.ChannelMessageSendEmbed(message.ChannelID, charEmbed)
-}
+// 	// Create an embed message with the character details
+// 	charEmbed := createCharacterEmbed(savedChar, message.Author)
+// 	session.ChannelMessageSendEmbed(message.ChannelID, charEmbed)
+// }
 
-// handleStatsCommand shows the user's character stats
-func handleStatsCommand(session *discordgo.Session, message *discordgo.MessageCreate) {
-	// Connect to the database
-	db := database.Connect()
+// // handleStatsCommand shows the user's character stats
+// func handleStatsCommand(session *discordgo.Session, message *discordgo.MessageCreate) {
+// 	// Connect to the database
+// 	db := database.Connect()
 
-	// Get the user's character
-	character, err := database.GetCharacterByOwner(db, message.Author.ID)
-	if err != nil {
-		session.ChannelMessageSend(message.ChannelID, "You don't have a character yet! Use `!cb roll` to create one.")
-		return
-	}
+// 	// Get the user's character
+// 	character, err := database.GetCharacterByOwner(db, message.Author.ID)
+// 	if err != nil {
+// 		session.ChannelMessageSend(message.ChannelID, "You don't have a character yet! Use `!cb roll` to create one.")
+// 		return
+// 	}
 
-	// Create an embed message with the character details
-	charEmbed := createCharacterEmbed(character, message.Author)
-	session.ChannelMessageSendEmbed(message.ChannelID, charEmbed)
-}
+// 	// Create an embed message with the character details
+// 	charEmbed := createCharacterEmbed(character, message.Author)
+// 	session.ChannelMessageSendEmbed(message.ChannelID, charEmbed)
+// }
 
-// createCharacterEmbed creates a Discord embed message with character details
-func createCharacterEmbed(character database.Character, author *discordgo.User) *discordgo.MessageEmbed {
-	// Get the character attributes
-	attrs := character.Attributes
-	stats := character.Stats
+// // createCharacterEmbed creates a Discord embed message with character details
+// func createCharacterEmbed(character database.Character, author *discordgo.User) *discordgo.MessageEmbed {
+// 	// Get the character attributes
+// 	attrs := character.Attributes
+// 	stats := character.Stats
 
-	// Create the embed
-	embed := &discordgo.MessageEmbed{
-		Title:       fmt.Sprintf("%s's Character", author.Username),
-		Description: fmt.Sprintf("Race: **%s** | Element: **%s** | Alignment: **%s**", attrs.Race.Trait_Name, attrs.Element.Trait_Name, attrs.Alignment.Trait_Name),
-		Color:       0xFF5500,
-		Thumbnail: &discordgo.MessageEmbedThumbnail{
-			URL: author.AvatarURL(""),
-		},
-		Fields: []*discordgo.MessageEmbedField{
-			{
-				Name:   "Stats",
-				Value:  formatStats(stats),
-				Inline: true,
-			},
-			{
-				Name:   "Traits",
-				Value:  formatTraits(attrs),
-				Inline: true,
-			},
-		},
-		Footer: &discordgo.MessageEmbedFooter{
-			Text: fmt.Sprintf("Character ID: %s", character.ID),
-		},
-	}
+// 	// Create the embed
+// 	embed := &discordgo.MessageEmbed{
+// 		Title:       fmt.Sprintf("%s's Character", author.Username),
+// 		Description: fmt.Sprintf("Race: **%s** | Element: **%s** | Alignment: **%s**", attrs.Race.Trait_Name, attrs.Element.Trait_Name, attrs.Alignment.Trait_Name),
+// 		Color:       0xFF5500,
+// 		Thumbnail: &discordgo.MessageEmbedThumbnail{
+// 			URL: author.AvatarURL(""),
+// 		},
+// 		Fields: []*discordgo.MessageEmbedField{
+// 			{
+// 				Name:   "Stats",
+// 				Value:  formatStats(stats),
+// 				Inline: true,
+// 			},
+// 			{
+// 				Name:   "Traits",
+// 				Value:  formatTraits(attrs),
+// 				Inline: true,
+// 			},
+// 		},
+// 		Footer: &discordgo.MessageEmbedFooter{
+// 			Text: fmt.Sprintf("Character ID: %s", character.ID),
+// 		},
+// 	}
 
-	return embed
-}
+// 	return embed
+// }
 
-// formatStats formats the character stats for display
-func formatStats(stats database.StatsSheets) string {
-	return fmt.Sprintf(
-		"**Vitality:** %d (%s)\n**Strength:** %d (%s)\n**Speed:** %d (%s)\n**Durability:** %d (%s)\n**Intelligence:** %d (%s)\n**Mana Flow:** %d (%s)\n**Skill Level:** %d (%s)",
-		stats.Vitality.Value, stats.Vitality.Stat_Name,
-		stats.Strength.Value, stats.Strength.Stat_Name,
-		stats.Speed.Value, stats.Speed.Stat_Name,
-		stats.Durability.Value, stats.Durability.Stat_Name,
-		stats.Intelligence.Value, stats.Intelligence.Stat_Name,
-		stats.ManaFlow.Value, stats.ManaFlow.Stat_Name,
-		stats.SkillLevel.Value, stats.SkillLevel.Stat_Name,
-	)
-}
+// // formatStats formats the character stats for display
+// func formatStats(stats database.StatsSheets) string {
+// 	return fmt.Sprintf(
+// 		"**Vitality:** %d (%s)\n**Strength:** %d (%s)\n**Speed:** %d (%s)\n**Durability:** %d (%s)\n**Intelligence:** %d (%s)\n**Mana Flow:** %d (%s)\n**Skill Level:** %d (%s)",
+// 		stats.Vitality.Value, stats.Vitality.Stat_Name,
+// 		stats.Strength.Value, stats.Strength.Stat_Name,
+// 		stats.Speed.Value, stats.Speed.Stat_Name,
+// 		stats.Durability.Value, stats.Durability.Stat_Name,
+// 		stats.Intelligence.Value, stats.Intelligence.Stat_Name,
+// 		stats.ManaFlow.Value, stats.ManaFlow.Stat_Name,
+// 		stats.SkillLevel.Value, stats.SkillLevel.Stat_Name,
+// 	)
+// }
 
-// formatTraits formats the character traits for display
-func formatTraits(attrs database.Attributes) string {
-	var traitDetails string
+// // formatTraits formats the character traits for display
+// func formatTraits(attrs database.Attributes) string {
+// 	var traitDetails string
 
-	traitDetails += fmt.Sprintf("**Race:** %s (%s)\n", attrs.Race.Trait_Name, attrs.Race.Rarity)
-	traitDetails += fmt.Sprintf("**Element:** %s\n", attrs.Element.Trait_Name)
+// 	traitDetails += fmt.Sprintf("**Race:** %s (%s)\n", attrs.Race.Trait_Name, attrs.Race.Rarity)
+// 	traitDetails += fmt.Sprintf("**Element:** %s\n", attrs.Element.Trait_Name)
 
-	if attrs.Trait.Trait_Name != "None" {
-		traitDetails += fmt.Sprintf("**Trait:** %s (%s)\n", attrs.Trait.Trait_Name, attrs.Trait.Rarity)
-	}
+// 	if attrs.Trait.Trait_Name != "None" {
+// 		traitDetails += fmt.Sprintf("**Trait:** %s (%s)\n", attrs.Trait.Trait_Name, attrs.Trait.Rarity)
+// 	}
 
-	if attrs.Weakness.Trait_Name != "None" {
-		traitDetails += fmt.Sprintf("**Weakness:** %s\n", attrs.Weakness.Trait_Name)
-	}
+// 	if attrs.Weakness.Trait_Name != "None" {
+// 		traitDetails += fmt.Sprintf("**Weakness:** %s\n", attrs.Weakness.Trait_Name)
+// 	}
 
-	if attrs.X_Factor.Trait_Name != "None" {
-		traitDetails += fmt.Sprintf("**X-Factor:** %s\n", attrs.X_Factor.Trait_Name)
-	}
+// 	if attrs.X_Factor.Trait_Name != "None" {
+// 		traitDetails += fmt.Sprintf("**X-Factor:** %s\n", attrs.X_Factor.Trait_Name)
+// 	}
 
-	return traitDetails
-}
+// 	return traitDetails
+// }

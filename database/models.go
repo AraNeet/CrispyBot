@@ -24,7 +24,6 @@ type User struct {
 	Attributes - Character main addition Attributes or traits. EXM: Race, Element, and Weakness
 */
 type Character struct {
-	ID         string      `json:"id,omitempty"`
 	Owner      string      `json:"owner,omitempty"`
 	Stats      StatsSheets `json:"statsSheets"`
 	Attributes Attributes  `json:"attributes"`
@@ -43,14 +42,13 @@ type Character struct {
 	SkillLevel - Equals Attack/Special Efficiency
 */
 type StatsSheets struct {
-	ID           string `json:"id,omitempty"`
-	Vitality     Stat   `json:"vitality"`
-	Durability   Stat   `json:"durability"`
-	Speed        Stat   `json:"speed"`
-	Strength     Stat   `json:"strength"`
-	Intelligence Stat   `json:"intelligence"`
-	ManaFlow     Stat   `json:"manaflow"`
-	SkillLevel   Stat   `json:"skilllevel"`
+	Vitality     Stat `json:"vitality"`
+	Durability   Stat `json:"durability"`
+	Speed        Stat `json:"speed"`
+	Strength     Stat `json:"strength"`
+	Intelligence Stat `json:"intelligence"`
+	ManaFlow     Stat `json:"manaflow"`
+	SkillLevel   Stat `json:"skilllevel"`
 }
 
 // Attributes model
@@ -65,13 +63,12 @@ type StatsSheets struct {
 	X_Factor - X_Factors Boost Attributes or A stat. Its normally a attribute.
 */
 type Attributes struct {
-	ID        string `json:"id,omitempty"`
-	Race      Trait  `json:"race"`
-	Element   Trait  `json:"element"`
-	Trait     Trait  `json:"trait"`
-	Weakness  Trait  `json:"weakness"`
-	Alignment Trait  `json:"alignment"`
-	X_Factor  Trait  `json:"x_factor"`
+	Race      Trait `json:"race"`
+	Element   Trait `json:"element"`
+	Trait     Trait `json:"trait"`
+	Weakness  Trait `json:"weakness"`
+	Alignment Trait `json:"alignment"`
+	X_Factor  Trait `json:"x_factor"`
 }
 
 // Traits model

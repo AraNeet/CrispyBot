@@ -22,6 +22,8 @@ func StartBot() {
 	if err != nil {
 		log.Fatalf("error opening connection: %v", err)
 	}
+	defer session.Close()
+
 	fmt.Println("Bot is now running. Press CTRL+C to exit.")
 	select {}
 }
