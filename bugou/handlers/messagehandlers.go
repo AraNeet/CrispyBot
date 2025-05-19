@@ -231,7 +231,7 @@ func formatCharacteristics(chars models.Characteristics) string {
 func formatStats(stats models.StatsSheets) string {
 	// Create a uniform format for all stats with name, value, and rarity
 	return fmt.Sprintf(
-		"**Vitality:** %d (%s) [%s]\n**Strength:** %d (%s) [%s]\n**Speed:** %d (%s) [%s]\n**Durability:** %d (%s) [%s]\n**Intelligence:** %d (%s) [%s]\n**Mana Flow:** %d (%s) [%s]\n**Skill Level:** %d (%s) [%s]",
+		"**Vitality:** %d (%s) [%s]\n**Strength:** %d (%s) [%s]\n**Speed:** %d (%s) [%s]\n**Durability:** %d (%s) [%s]\n**Intelligence:** %d (%s) [%s]\n**Mana:** %d (%s) [%s]\n**Mastery:** %d (%s) [%s]",
 		stats.Vitality.Value, stats.Vitality.Stat_Name, stats.Vitality.Rarity,
 		stats.Strength.Value, stats.Strength.Stat_Name, stats.Strength.Rarity,
 		stats.Speed.Value, stats.Speed.Stat_Name, stats.Speed.Rarity,

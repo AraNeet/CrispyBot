@@ -20,8 +20,8 @@ type StatsSheets struct {
 	Speed        Stat `bson:"speed" json:"speed"`
 	Strength     Stat `bson:"strength" json:"strength"`
 	Intelligence Stat `bson:"intelligence" json:"intelligence"`
-	Mana         Stat `bson:"manaflow" json:"manaflow"`
-	Mastery      Stat `bson:"skillLevel" json:"skillLevel"`
+	Mana         Stat `bson:"Mana" json:"Mana"`
+	Mastery      Stat `bson:"mastery" json:"mastery"`
 }
 
 type Traits struct {

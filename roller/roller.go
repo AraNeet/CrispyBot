@@ -55,8 +55,11 @@ func generateStats(rng *rand.Rand) models.StatsSheets {
 
 // Generate a single stat with random rarity
 func generateStat(statType variables.StatType, rarityMap map[string][]string, rng *rand.Rand) models.Stat {
-	rarity := SelectTier(config, rng)
+	// First, select a trait name using RollRarityTrait
 	statName := RollRarityTrait(rarityMap, config, rng)
+
+	// Then determine the correct rarity based on the selected trait name
+	rarity := getTierForTrait(statName, rarityMap)
 
 	// Get base value for the stat
 	baseValue := getStatBaseValue(statType, statName)
