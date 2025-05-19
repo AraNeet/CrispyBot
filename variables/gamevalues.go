@@ -8,6 +8,34 @@ const (
 	Legendary_Chance = 2
 )
 
+// Combat system constants
+const (
+	// Stat conversion rates (10:1 ratio as requested)
+	VitalityToHPRatio         = 10 // 1 Vitality = 10 HP
+	DurabilityToDefenseRatio  = 10 // 1 Durability = 10 Defense
+	SpeedToInitiativeRatio    = 10 // 1 Speed = 10 Initiative
+	StrengthToDamageRatio     = 10 // 1 Strength = 10 base physical damage
+	IntelligenceToDamageRatio = 10 // 1 Intelligence = 10 base magic damage
+	ManaToPoolRatio           = 10 // 1 Mana = 10 MP
+	MasteryToAccuracyRatio    = 10 // 1 Mastery = 10 accuracy points
+
+	// Combat limits
+	MaxStatValue   = 300 // Maximum value for any base stat
+	MaxHP          = MaxStatValue * VitalityToHPRatio
+	MaxMP          = MaxStatValue * ManaToPoolRatio
+	MaxDodgeChance = 30 // Maximum dodge chance (30%)
+
+	// Base values
+	BaseAccuracy         = 70  // Base accuracy percentage
+	BaseDodgeChance      = 5   // Base dodge chance percentage
+	BaseCritChance       = 5   // Base critical hit chance percentage
+	CritDamageMultiplier = 1.5 // Damage multiplier on critical hit
+
+	// Action costs
+	PhysicalAttackManaCost  = 0  // Mana cost for physical attacks
+	MagicAttackBaseManaCost = 15 // Base mana cost for magic attacks
+)
+
 var (
 	VitalityValue = map[string]float64{
 		"Helpless-": 0,

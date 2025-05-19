@@ -1,6 +1,7 @@
 package bugouhandlers
 
 import (
+	combathandlers "CrispyBot/bugou/combathandlers"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -22,6 +23,7 @@ const (
 	rerollStatCommand   = "rerollstat"
 	rerollStatusCommand = "rerolls"
 	deleteCommand       = "delete"
+	battleCommand       = "battle" // Added battle command
 )
 
 // MessageCreate handles incoming Discord messages
@@ -76,6 +78,8 @@ func MessageCreate(session *discordgo.Session, message *discordgo.MessageCreate)
 		HandleRerollStatusCommand(session, message)
 	case deleteCommand:
 		HandleDeleteCharacterRequest(session, message)
+	case battleCommand:
+		combathandlers.HandleBattleCommand(session, message, commandParts)
 	default:
 		session.ChannelMessageSend(message.ChannelID, "Unknown command. Try `!cb help` for a list of commands.")
 	}
@@ -143,6 +147,14 @@ func SendHelpMessage(session *discordgo.Session, channelID string) {
 			{
 				Name:  "!cb delete",
 				Value: "Delete your current character (requires confirmation)",
+			},
+			{
+				Name:  "!cb battle start [opponent name/mention] [difficulty]",
+				Value: "Start a battle with an NPC or another player",
+			},
+			{
+				Name:  "!cb battle [action]",
+				Value: "Battle actions: attack, magic, defend, item, status, forfeit",
 			},
 		},
 		Footer: &discordgo.MessageEmbedFooter{
