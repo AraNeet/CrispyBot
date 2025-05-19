@@ -112,6 +112,54 @@ func SaveCharacter(db *DB, character models.Character, discordID string) (models
 	// Associate character with owner
 	character.Owner = discordID
 
+	// Create an initial weapon for the character
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	initialWeapon := roller.GenerateInitialWeaponItem(character.Characteristics.Alignment.Trait_Name, rng)
+
+	// Generate a unique inventory key for the weapon
+	inventoryKey := fmt.Sprintf("weapon_%d", time.Now().UnixNano())
+
+	// Save the item to the database
+	err := SaveItem(db, initialWeapon, inventoryKey, discordID)
+	if err != nil {
+		return models.Character{}, fmt.Errorf("failed to save initial weapon: %w", err)
+	}
+
+	// Set the character's equipped weapon
+	character.EquippedWeapon = models.EquippedItem{
+		ItemKey:  inventoryKey,
+		ItemName: initialWeapon.Name,
+	}
+
+	// Initialize user if they don't exist
+	user, err := GetUserByID(db, discordID)
+	if err != nil {
+		// Create new user
+		user, err = CreateUser(db, discordID)
+		if err != nil {
+			return models.Character{}, fmt.Errorf("failed to create user: %w", err)
+		}
+	}
+
+	// Initialize user inventory if it doesn't exist
+	if user.Inventory == nil {
+		user.Inventory = make(map[string]string)
+	}
+
+	// Add weapon to user's inventory
+	user.Inventory[inventoryKey] = initialWeapon.Name
+
+	// Update user in database
+	userCollection := db.GetCollection(usersCollection)
+	_, err = userCollection.UpdateOne(
+		ctx,
+		bson.M{"discordID": discordID},
+		bson.M{"$set": bson.M{"inventory": user.Inventory}},
+	)
+	if err != nil {
+		return models.Character{}, fmt.Errorf("failed to update user inventory: %w", err)
+	}
+
 	// Insert character
 	collection := db.GetCollection(charactersCollection)
 	result, err := collection.InsertOne(ctx, character)
@@ -123,7 +171,7 @@ func SaveCharacter(db *DB, character models.Character, discordID string) (models
 	character.ID = result.InsertedID.(primitive.ObjectID)
 
 	// Also update the user document to reference this character
-	userCollection := db.GetCollection(usersCollection)
+	userCollection = db.GetCollection(usersCollection)
 	filter := bson.M{"discordID": discordID}
 	update := bson.M{"$set": bson.M{"character": character}}
 	opts := options.Update().SetUpsert(true)

@@ -30,11 +30,45 @@ func GenerateCharacter(ownerID string) models.Character {
 		Experience:      0, // Start with 0 XP
 	}
 
-	// Give a random starting weapon based on alignment
-	initialWeapon := generateInitialWeapon(characteristics.Alignment.Trait_Name, rng)
-	character.EquippedWeapon = initialWeapon
-
 	return character
+}
+
+// Create a new function to generate an Item for the initial weapon
+func GenerateInitialWeaponItem(alignment string, rng *rand.Rand) models.Item {
+	// Generate weapon name using existing weighted options
+	weaponName := RollWeightedOption(WeaponOptions, rng)
+
+	// Determine rarity based on alignment
+	var rarity string
+
+	// Higher chance of better rarity for Hero alignment
+	if alignment == "Hero" {
+		// Use rarityConfig with boosted chances for better rarities
+		rarityConfig := RarityConfig{
+			Common:    variables.Common_Chance - 15,
+			Uncommon:  variables.Uncommon_Chance - 5,
+			Rare:      variables.Rare_Chance,
+			Epic:      variables.Epic_Chance + variables.HeroAlignmentEpicBoost,
+			Legendary: variables.Legendary_Chance + variables.HeroAlignmentLegendaryBoost,
+		}
+
+		rarity = SelectTier(rarityConfig, rng)
+	} else {
+		rarity = SelectTier(DefaultRarityConfig(), rng)
+	}
+
+	// Generate stats based on rarity
+	stats := generateItemStats(rarity, rng)
+
+	// Calculate price (won't be used for initial weapon, but required by Item struct)
+	price := calculatePrice(rarity, stats)
+
+	return models.Item{
+		Name:   weaponName,
+		Rarity: rarity,
+		Stats:  stats,
+		Price:  price,
+	}
 }
 
 // Generate random stats based on rarity
@@ -359,4 +393,99 @@ func getTierForTrait(traitName string, rarityMap map[string][]string) string {
 		}
 	}
 	return "Common" // Default rarity
+}
+
+// Helper function to generate item stats (copied from shop/shop.go)
+func generateItemStats(rarity string, rng *rand.Rand) map[string]int {
+	stats := make(map[string]int)
+
+	// Determine base value based on rarity
+	var baseValue int
+	switch rarity {
+	case "Common":
+		baseValue = 10
+	case "Uncommon":
+		baseValue = 15
+	case "Rare":
+		baseValue = 20
+	case "Epic":
+		baseValue = 30
+	case "Legendary":
+		baseValue = 60
+	}
+
+	// Determine how many stats will be affected
+	numStats := 1
+	if rarity == "Uncommon" || rarity == "Rare" {
+		numStats = 1 + rng.Intn(2) // 1-2 stats
+	} else if rarity == "Epic" || rarity == "Legendary" {
+		numStats = 2 + rng.Intn(2) // 2-3 stats
+	}
+
+	// Select random stats from available options
+	statTypes := []string{
+		"Vitality",
+		"Durability",
+		"Speed",
+		"Strength",
+		"Intelligence",
+		"Mana",
+		"Mastery",
+	}
+
+	// Create a copy of available stats
+	availableStats := make([]string, len(statTypes))
+	copy(availableStats, statTypes)
+
+	for i := 0; i < numStats && len(availableStats) > 0; i++ {
+		// Select a random stat
+		statIdx := rng.Intn(len(availableStats))
+		stat := availableStats[statIdx]
+
+		// Remove the selected stat from available options
+		availableStats = append(availableStats[:statIdx], availableStats[statIdx+1:]...)
+
+		// 70% chance for positive buff, 30% chance for debuff
+		value := baseValue
+		if rng.Intn(10) < 3 {
+			value = -value
+		}
+
+		stats[stat] = value
+	}
+
+	return stats
+}
+
+// Helper function to calculate price (copied from shop/shop.go)
+func calculatePrice(rarity string, stats map[string]int) int {
+	var basePrice int
+
+	// Base price by rarity
+	switch rarity {
+	case "Common":
+		basePrice = 100
+	case "Uncommon":
+		basePrice = 250
+	case "Rare":
+		basePrice = 500
+	case "Epic":
+		basePrice = 1000
+	case "Legendary":
+		basePrice = 2500
+	}
+
+	// Adjust price based on stats
+	statModifier := 0
+	for _, value := range stats {
+		statModifier += value
+	}
+
+	// Positive stats increase price, negative stats decrease it
+	priceModifier := 1.0 + float64(statModifier)/100.0
+	if priceModifier < 0.5 {
+		priceModifier = 0.5 // Minimum price is 50% of base price
+	}
+
+	return int(float64(basePrice) * priceModifier)
 }
