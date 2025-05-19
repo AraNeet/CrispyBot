@@ -47,6 +47,103 @@ const (
 )
 
 var (
+	ElementEffectiveness = map[string]map[string]float64{
+		"Fire": {
+			"Water":   0.5,
+			"Nature":  2.0,
+			"Frost":   2.0,
+			"Crystal": 2.0,
+		},
+		"Water": {
+			"Nature":    0.5,
+			"Lightning": 0.5,
+			"Toxic":     0.5,
+			"Time":      0.5,
+			"Fire":      2.0,
+			"Crystal":   2.0,
+			"Sound":     2.0,
+		},
+		"Earth": {
+			"Nature":  0.5,
+			"Frost":   0.5,
+			"Gravity": 0.5,
+			"Time":    0.5,
+			"Crystal": 2.0,
+			"Fire":    2.0,
+			"Sound":   2.0,
+		},
+		"Wind": {
+			"Earth": 2.0,
+			"Frost": 0.5,
+			"Time":  0.5,
+		},
+		"Nature": {
+			"Fire":      0.5,
+			"Time":      0.5,
+			"Frost":     0.5,
+			"Lightning": 0.5,
+			"Water":     2.0,
+			"Crystal":   2.0,
+			"Earth":     2.0,
+		},
+		"Toxic": {
+			"Arcane": 0.5,
+			"Nature": 2.0,
+			"Water":  2.0,
+			"Earth":  2.0,
+		},
+		"Lightning": {
+			"Earth":  0.5,
+			"Water":  2.0,
+			"Nature": 2.0,
+			"Frost":  2.0,
+		},
+		"Sound": {
+			"Water": 0.5,
+			"Earth": 2.0,
+		},
+		"Dark": {
+			"Light": 2.0,
+			"Time":  2.0,
+		},
+		"Light": {
+			"Dark":   2.0,
+			"Arcane": 2.0,
+		},
+		"Frost": {
+			"Fire":      0.5,
+			"Lightning": 0.5,
+			"Nature":    2.0,
+			"Earth":     2.0,
+			"Crystal":   2.0,
+		},
+		"Gravity": {
+			"Earth":   2.0,
+			"Crystal": 2.0,
+		},
+		"Crystal": {
+			"Fire":   0.5,
+			"Water":  0.5,
+			"Nature": 0.5,
+			"Earth":  2.0,
+			"Arcane": 2.0,
+		},
+		"Arcane": {
+			"Crystal": 0.5,
+			"Dark":    0.5,
+			"Toxic":   2.0,
+			"Time":    2.0,
+		},
+		"Time": {
+			"Arcane": 0.5,
+			"Light":  0.5,
+			"Fire":   2.0,
+			"Water":  2.0,
+			"Earth":  2.0,
+			"Wind":   2.0,
+			"Nature": 2.0,
+		},
+	}
 	VitalityValue = map[string]float64{
 		"Helpless-": 0,
 		"Helpless":  45.75,
