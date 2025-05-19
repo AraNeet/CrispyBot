@@ -51,8 +51,8 @@ type Trait struct {
 }
 
 type Characteristic struct {
-	Rarity      string              `bson:"rarity" json:"rarity"`
-	Trait_Name  string              `bson:"traitName" json:"traitName"`
-	Type        variables.TraitType `bson:"type" json:"type"`
-	Stats_Value map[string]int      `bson:"statsValue" json:"statsValue"`
+	Rarity      string                       `bson:"rarity" json:"rarity"`
+	Trait_Name  string                       `bson:"CharacteristicsName" json:"CharacteristicsName"`
+	Type        variables.CharacteristicType `bson:"type" json:"type"`
+	Stats_Value map[string]int               `bson:"statsValue" json:"statsValue"`
 }
