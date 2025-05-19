@@ -7,7 +7,6 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// Update CreateCharacterEmbed to show equipped items
 func CreateCharacterEmbed(character models.Character, author *discordgo.User) *discordgo.MessageEmbed {
 	// Get the character characteristics, traits, and stats
 	chars := character.Characteristics
@@ -24,9 +23,15 @@ func CreateCharacterEmbed(character models.Character, author *discordgo.User) *d
 
 	// Create the embed
 	embed := &discordgo.MessageEmbed{
-		Title:       fmt.Sprintf("%s's Character", author.Username),
-		Description: fmt.Sprintf("Race: **%s** | Element: **%s** | Alignment: **%s**", chars.Race.Trait_Name, chars.Element.Trait_Name, chars.Alignment.Trait_Name),
-		Color:       0xFF5500,
+		Title: fmt.Sprintf("%s's Character", author.Username),
+		Description: fmt.Sprintf("**Level %d** (%d XP)\nRace: **%s** | Element: **%s** | Alignment: **%s** | Height: **%s**",
+			character.Level,
+			character.Experience,
+			chars.Race.Trait_Name,
+			chars.Element.Trait_Name,
+			chars.Alignment.Trait_Name,
+			chars.Height.Trait_Name),
+		Color: 0xFF5500,
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
 			URL: author.AvatarURL(""),
 		},
@@ -60,7 +65,7 @@ func CreateCharacterEmbed(character models.Character, author *discordgo.User) *d
 	return embed
 }
 
-// formatCharacteristics formats the character characteristics for display
+// Updated formatCharacteristics to include height
 func formatCharacteristics(chars models.Characteristics) string {
 	var charDetails string
 
@@ -72,6 +77,9 @@ func formatCharacteristics(chars models.Characteristics) string {
 
 	// Format Alignment with its rarity
 	charDetails += fmt.Sprintf("**Alignment:** %s (%s)\n", chars.Alignment.Trait_Name, chars.Alignment.Rarity)
+
+	// Format Height
+	charDetails += fmt.Sprintf("**Height:** %s\n", chars.Height.Trait_Name)
 
 	// Add any race-specific stat bonuses or penalties
 	if len(chars.Race.Stats_Value) > 0 {

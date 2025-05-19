@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// In database/models/character.go
 type Character struct {
 	ID              primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Owner           string             `bson:"owner" json:"owner"`
@@ -14,6 +15,8 @@ type Character struct {
 	Stats           StatsSheets        `bson:"stats" json:"stats"`
 	Attributes      Traits             `bson:"attributes" json:"attributes"`
 	EquippedWeapon  EquippedItem       `bson:"equippedWeapon" json:"equippedWeapon"`
+	Level           int                `bson:"level" json:"level"`           // New field for level
+	Experience      int                `bson:"experience" json:"experience"` // New field for XP
 }
 
 type EquippedItem struct {
@@ -45,10 +48,12 @@ type Traits struct {
 	X_Factor   Trait `bson:"xFactor" json:"xFactor"`
 }
 
+// Update Characteristics to explicitly include Height
 type Characteristics struct {
 	Race      Characteristic `bson:"race" json:"race"`
 	Alignment Characteristic `bson:"alignment" json:"alignment"`
 	Element   Characteristic `bson:"element" json:"element"`
+	Height    Characteristic `bson:"height" json:"height"` // Add Height field
 }
 
 type Stat struct {

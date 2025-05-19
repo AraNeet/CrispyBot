@@ -3,11 +3,11 @@ package roller
 import (
 	"CrispyBot/database/models"
 	"CrispyBot/variables"
+	"fmt"
 	"math/rand"
 	"time"
 )
 
-// Generate a new character with random attributes
 func GenerateCharacter(ownerID string) models.Character {
 	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 
@@ -17,7 +17,7 @@ func GenerateCharacter(ownerID string) models.Character {
 	// Generate traits (innate, inadequacy, x-factor)
 	traits := generateTraits(rng)
 
-	// Generate characteristics (race, alignment, element)
+	// Generate characteristics (race, alignment, element, height)
 	characteristics := generateCharacteristics(rng)
 
 	// Create the character
@@ -26,7 +26,13 @@ func GenerateCharacter(ownerID string) models.Character {
 		Stats:           stats,
 		Attributes:      traits,
 		Characteristics: characteristics,
+		Level:           1, // Start at level 1
+		Experience:      0, // Start with 0 XP
 	}
+
+	// Give a random starting weapon based on alignment
+	initialWeapon := generateInitialWeapon(characteristics.Alignment.Trait_Name, rng)
+	character.EquippedWeapon = initialWeapon
 
 	return character
 }
@@ -133,7 +139,7 @@ func generateTraits(rng *rand.Rand) models.Traits {
 	}
 }
 
-// Generate character characteristics (race, alignment, element)
+// Updated generateCharacteristics to include height
 func generateCharacteristics(rng *rand.Rand) models.Characteristics {
 	// Generate race characteristic
 	race := generateRaceCharacteristic(rng)
@@ -144,10 +150,14 @@ func generateCharacteristics(rng *rand.Rand) models.Characteristics {
 	// Generate element characteristic
 	element := generateElementCharacteristic(rng)
 
+	// Generate height characteristic
+	height := generateHeightCharacteristic(rng)
+
 	return models.Characteristics{
 		Race:      race,
 		Alignment: alignment,
 		Element:   element,
+		Height:    height,
 	}
 }
 
@@ -286,6 +296,56 @@ func generateElementCharacteristic(rng *rand.Rand) models.Characteristic {
 		Trait_Name:  elementName,
 		Type:        variables.Element,
 		Stats_Value: statsValues,
+	}
+}
+
+// New function to generate height characteristic
+func generateHeightCharacteristic(rng *rand.Rand) models.Characteristic {
+	heightValue := RollEqualOption(HeightOptions, rng)
+
+	// Heights don't typically affect stats
+	statsValues := make(map[string]int)
+
+	return models.Characteristic{
+		Rarity:      "Common", // Default rarity for heights
+		Trait_Name:  heightValue,
+		Type:        variables.Height,
+		Stats_Value: statsValues,
+	}
+}
+
+func generateInitialWeapon(alignment string, rng *rand.Rand) models.EquippedItem {
+	// Create rarity config with default chances
+	rarityConfig := RarityConfig{
+		Common:    variables.Common_Chance,
+		Uncommon:  variables.Uncommon_Chance,
+		Rare:      variables.Rare_Chance,
+		Epic:      variables.Epic_Chance,
+		Legendary: variables.Legendary_Chance,
+	}
+
+	// Boost Epic and Legendary chances for Hero alignment
+	if alignment == "Hero" {
+		// Reduce Common and Uncommon chances
+		rarityBoostAmount := variables.HeroAlignmentEpicBoost + variables.HeroAlignmentLegendaryBoost
+		reductionFromCommon := rarityBoostAmount * 2 / 3                 // Take 2/3 from Common
+		reductionFromUncommon := rarityBoostAmount - reductionFromCommon // Take 1/3 from Uncommon
+
+		rarityConfig.Common -= reductionFromCommon
+		rarityConfig.Uncommon -= reductionFromUncommon
+		rarityConfig.Epic += variables.HeroAlignmentEpicBoost
+		rarityConfig.Legendary += variables.HeroAlignmentLegendaryBoost
+	}
+
+	// Roll weapon using weighted chances
+	weaponName := RollWeightedOption(WeaponOptions, rng)
+
+	// Generate a unique item key
+	itemKey := fmt.Sprintf("starting_weapon_%d", time.Now().UnixNano())
+
+	return models.EquippedItem{
+		ItemKey:  itemKey,
+		ItemName: weaponName,
 	}
 }
 

@@ -412,3 +412,75 @@ func RerollSingleStat(db *DB, userID string, statType variables.StatType) (model
 
 	return newStat, nil
 }
+
+// AddExperience adds XP to a character and handles level ups
+func AddExperience(db *DB, userID string, expAmount int) (int, int, bool, error) {
+	if db == nil {
+		return 0, 0, false, fmt.Errorf("database connection is nil")
+	}
+
+	// Get the character
+	character, err := GetCharacterByOwner(db, userID)
+	if err != nil {
+		return 0, 0, false, fmt.Errorf("no character found for this user: %w", err)
+	}
+
+	// Calculate new experience
+	newExp := character.Experience + expAmount
+	oldLevel := character.Level
+
+	// Calculate new level based on XP
+	newLevel := calculateLevel(newExp)
+
+	// Check if level up occurred
+	leveledUp := newLevel > oldLevel
+
+	// Update the character with new experience and level
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	charCollection := db.GetCollection(charactersCollection)
+	_, err = charCollection.UpdateOne(
+		ctx,
+		bson.M{"owner": userID},
+		bson.M{"$set": bson.M{
+			"experience": newExp,
+			"level":      newLevel,
+		}},
+	)
+
+	if err != nil {
+		return character.Experience, character.Level, false, fmt.Errorf("failed to update experience: %w", err)
+	}
+
+	return newExp, newLevel, leveledUp, nil
+}
+
+// calculateLevel determines level based on experience points
+func calculateLevel(exp int) int {
+	level := 1 // Start at level 1
+
+	// Required XP for each level increases using a multiplier
+	requiredXP := variables.LevelUpBaseXP
+
+	// Calculate level based on XP
+	for exp >= requiredXP {
+		level++
+		// Next level requires more XP
+		requiredXP = int(float64(requiredXP) * variables.LevelUpMultiplier)
+	}
+
+	return level
+}
+
+// GetXPForNextLevel calculates how much XP is needed for the next level
+func GetXPForNextLevel(currentLevel int) int {
+	requiredXP := variables.LevelUpBaseXP
+
+	// Calculate required XP for next level
+	for i := 1; i < currentLevel; i++ {
+		requiredXP = int(float64(requiredXP) * variables.LevelUpMultiplier)
+	}
+
+	return requiredXP
+}

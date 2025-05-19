@@ -32,8 +32,18 @@ const (
 	CritDamageMultiplier = 1.5 // Damage multiplier on critical hit
 
 	// Action costs
-	PhysicalAttackManaCost  = 0  // Mana cost for physical attacks
-	MagicAttackBaseManaCost = 15 // Base mana cost for magic attacks
+	PhysicalAttackManaCost  = 0   // Mana cost for physical attacks
+	MagicAttackBaseManaCost = 15  // Base mana cost for magic attacks
+	BaseExperienceGain      = 100 // Base XP earned per battle
+	ExperienceModifier      = 1.0 // Global modifier for XP gains (can be adjusted)
+
+	// Level-up thresholds
+	LevelUpBaseXP     = 100 // Base XP needed for level 2
+	LevelUpMultiplier = 1.5 // Each level requires 1.5x more XP than the previous
+
+	// Random starting weapon chances
+	HeroAlignmentEpicBoost      = 10 // Percentage points to add to Epic chance for Heroes
+	HeroAlignmentLegendaryBoost = 10
 )
 
 var (

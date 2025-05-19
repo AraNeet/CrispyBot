@@ -459,7 +459,6 @@ func (b *Battle) StartBattle() {
 	}
 }
 
-// GetResult calculates the battle result when battle is over
 func (b *Battle) GetResult() (*BattleResult, error) {
 	if b.State != BattleComplete {
 		return nil, errors.New("battle is not complete")
@@ -477,7 +476,12 @@ func (b *Battle) GetResult() (*BattleResult, error) {
 
 	// Calculate rewards based on battle stats
 	winner := b.Participants[winnerID]
-	expGain := 50 + (b.Round * 10)
+
+	// Base XP scaled by round count and modified by XP modifier
+	baseExpGain := variables.BaseExperienceGain + (b.Round * 10)
+	expGain := int(float64(baseExpGain) * variables.ExperienceModifier)
+
+	// Base currency reward
 	currencyGain := 100 + (b.Round * 5)
 
 	return &BattleResult{

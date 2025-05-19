@@ -567,7 +567,7 @@ func formatBattleLog(battle *Battle) string {
 	return log
 }
 
-// handleBattleCompletion processes rewards and cleanup when a battle ends
+// Update handleBattleCompletion to award XP
 func handleBattleCompletion(session *discordgo.Session, battle *Battle, battleID string) {
 	// Get battle results
 	result, err := battle.GetResult()
@@ -587,32 +587,66 @@ func handleBattleCompletion(session *discordgo.Session, battle *Battle, battleID
 			fmt.Printf("Error adding currency: %v\n", err)
 		}
 
-		// Experience points could be added here if implementing a leveling system
-	}
+		// Add experience and check for level up
+		newExp, newLevel, leveledUp, err := database.AddExperience(db, result.Winner, result.Experience)
+		if err != nil {
+			fmt.Printf("Error adding experience: %v\n", err)
+		}
 
-	// Create result embed
-	resultEmbed := &discordgo.MessageEmbed{
-		Title:       "🏆 Battle Complete!",
-		Description: fmt.Sprintf("**%s** has won the battle!", battle.Participants[result.Winner].UserName),
-		Color:       0x00FF00,
-		Fields: []*discordgo.MessageEmbedField{
-			{
-				Name:  "Battle Statistics",
-				Value: fmt.Sprintf("Rounds: %d\nRemaining HP: %d\n", result.Rounds, result.WinnerHP),
+		// Create result embed
+		resultEmbed := &discordgo.MessageEmbed{
+			Title:       "🏆 Battle Complete!",
+			Description: fmt.Sprintf("**%s** has won the battle!", battle.Participants[result.Winner].UserName),
+			Color:       0x00FF00,
+			Fields: []*discordgo.MessageEmbedField{
+				{
+					Name:  "Battle Statistics",
+					Value: fmt.Sprintf("Rounds: %d\nRemaining HP: %d\n", result.Rounds, result.WinnerHP),
+				},
+				{
+					Name: "Rewards",
+					Value: fmt.Sprintf("Experience: **+%d** XP (Total: %d)\nCurrency: **+%d** coins",
+						result.Experience, newExp, result.CurrencyGain),
+				},
 			},
-		},
-	}
+		}
 
-	// Add rewards section if winner is a player
-	if !strings.HasPrefix(result.Winner, "npc_") {
-		resultEmbed.Fields = append(resultEmbed.Fields, &discordgo.MessageEmbedField{
-			Name:  "Rewards",
-			Value: fmt.Sprintf("Experience: %d\nCurrency: %d coins", result.Experience, result.CurrencyGain),
-		})
-	}
+		// Send the result message
+		session.ChannelMessageSendEmbed(battle.ChannelID, resultEmbed)
 
-	// Send the result message
-	session.ChannelMessageSendEmbed(battle.ChannelID, resultEmbed)
+		// If leveled up, send a separate level up message
+		if leveledUp {
+			levelUpEmbed := &discordgo.MessageEmbed{
+				Title: "🎉 Level Up!",
+				Description: fmt.Sprintf("**%s** has reached level **%d**!",
+					battle.Participants[result.Winner].UserName, newLevel),
+				Color: 0xFFD700,
+				Fields: []*discordgo.MessageEmbedField{
+					{
+						Name:  "Character Growth",
+						Value: "Your character grows stronger with each level!",
+					},
+				},
+			}
+
+			session.ChannelMessageSendEmbed(battle.ChannelID, levelUpEmbed)
+		}
+	} else {
+		// If winner is NPC, just show battle result without rewards
+		resultEmbed := &discordgo.MessageEmbed{
+			Title:       "Battle Complete",
+			Description: fmt.Sprintf("**%s** has won the battle!", battle.Participants[result.Winner].UserName),
+			Color:       0xFF0000,
+			Fields: []*discordgo.MessageEmbedField{
+				{
+					Name:  "Battle Statistics",
+					Value: fmt.Sprintf("Rounds: %d\nRemaining HP: %d\n", result.Rounds, result.WinnerHP),
+				},
+			},
+		}
+
+		session.ChannelMessageSendEmbed(battle.ChannelID, resultEmbed)
+	}
 
 	// Remove battle from active battles
 	ActiveBattlesMutex.Lock()
