@@ -1,6 +1,7 @@
 package database
 
 import (
+	"CrispyBot/database/models"
 	"context"
 	"fmt"
 	"time"
@@ -18,13 +19,13 @@ const (
 )
 
 // CreateUser creates a new user in the database
-func CreateUser(db *DB, userID string) (User, error) {
+func CreateUser(db *DB, userID string) (models.User, error) {
 	if db == nil {
-		return User{}, fmt.Errorf("database connection is nil")
+		return models.User{}, fmt.Errorf("database connection is nil")
 	}
 
 	if userID == "" {
-		return User{}, fmt.Errorf("discord ID isn't passed")
+		return models.User{}, fmt.Errorf("discord ID isn't passed")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -34,24 +35,24 @@ func CreateUser(db *DB, userID string) (User, error) {
 	collection := db.GetCollection(usersCollection)
 	filter := bson.M{"discordID": userID}
 
-	var existingUser User
+	var existingUser models.User
 	err := collection.FindOne(ctx, filter).Decode(&existingUser)
 	if err == nil {
 		// User already exists
 		return existingUser, nil
 	} else if err != mongo.ErrNoDocuments {
 		// Unexpected error
-		return User{}, fmt.Errorf("error checking for existing user: %w", err)
+		return models.User{}, fmt.Errorf("error checking for existing user: %w", err)
 	}
 
 	// Create new user
-	newUser := User{
+	newUser := models.User{
 		DiscordID: userID,
 	}
 
 	result, err := collection.InsertOne(ctx, newUser)
 	if err != nil {
-		return User{}, fmt.Errorf("failed to create user: %w", err)
+		return models.User{}, fmt.Errorf("failed to create user: %w", err)
 	}
 
 	// Set the ID from the inserted document
@@ -61,13 +62,13 @@ func CreateUser(db *DB, userID string) (User, error) {
 }
 
 // GetUserByID retrieves a user by Discord ID
-func GetUserByID(db *DB, discordID string) (User, error) {
+func GetUserByID(db *DB, discordID string) (models.User, error) {
 	if db == nil {
-		return User{}, fmt.Errorf("database connection is nil")
+		return models.User{}, fmt.Errorf("database connection is nil")
 	}
 
 	if discordID == "" {
-		return User{}, fmt.Errorf("discord ID is required")
+		return models.User{}, fmt.Errorf("discord ID is required")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -76,26 +77,26 @@ func GetUserByID(db *DB, discordID string) (User, error) {
 	collection := db.GetCollection(usersCollection)
 	filter := bson.M{"discordID": discordID}
 
-	var user User
+	var user models.User
 	err := collection.FindOne(ctx, filter).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return User{}, fmt.Errorf("user not found")
+			return models.User{}, fmt.Errorf("user not found")
 		}
-		return User{}, fmt.Errorf("failed to find user: %w", err)
+		return models.User{}, fmt.Errorf("failed to find user: %w", err)
 	}
 
 	return user, nil
 }
 
 // SaveCharacter saves a character to the database
-func SaveCharacter(db *DB, character Character, discordID string) (Character, error) {
+func SaveCharacter(db *DB, character models.Character, discordID string) (models.Character, error) {
 	if db == nil {
-		return Character{}, fmt.Errorf("database connection is nil")
+		return models.Character{}, fmt.Errorf("database connection is nil")
 	}
 
 	if discordID == "" {
-		return Character{}, fmt.Errorf("discord ID is required")
+		return models.Character{}, fmt.Errorf("discord ID is required")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -108,7 +109,7 @@ func SaveCharacter(db *DB, character Character, discordID string) (Character, er
 	collection := db.GetCollection(charactersCollection)
 	result, err := collection.InsertOne(ctx, character)
 	if err != nil {
-		return Character{}, fmt.Errorf("failed to save character: %w", err)
+		return models.Character{}, fmt.Errorf("failed to save character: %w", err)
 	}
 
 	// Get the ID of the inserted document
@@ -122,20 +123,20 @@ func SaveCharacter(db *DB, character Character, discordID string) (Character, er
 
 	_, err = userCollection.UpdateOne(ctx, filter, update, opts)
 	if err != nil {
-		return Character{}, fmt.Errorf("failed to update user with character: %w", err)
+		return models.Character{}, fmt.Errorf("failed to update user with character: %w", err)
 	}
 
 	return character, nil
 }
 
 // GetCharacterByOwner retrieves a character by owner ID
-func GetCharacterByOwner(db *DB, ownerID string) (Character, error) {
+func GetCharacterByOwner(db *DB, ownerID string) (models.Character, error) {
 	if db == nil {
-		return Character{}, fmt.Errorf("database connection is nil")
+		return models.Character{}, fmt.Errorf("database connection is nil")
 	}
 
 	if ownerID == "" {
-		return Character{}, fmt.Errorf("owner ID is required")
+		return models.Character{}, fmt.Errorf("owner ID is required")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -144,26 +145,26 @@ func GetCharacterByOwner(db *DB, ownerID string) (Character, error) {
 	collection := db.GetCollection(charactersCollection)
 	filter := bson.M{"owner": ownerID}
 
-	var character Character
+	var character models.Character
 	err := collection.FindOne(ctx, filter).Decode(&character)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return Character{}, fmt.Errorf("no character found for user: %s", ownerID)
+			return models.Character{}, fmt.Errorf("no character found for user: %s", ownerID)
 		}
-		return Character{}, fmt.Errorf("failed to query character: %w", err)
+		return models.Character{}, fmt.Errorf("failed to query character: %w", err)
 	}
 
 	return character, nil
 }
 
 // GetCharacter retrieves a character by ID
-func GetCharacter(db *DB, characterID string) (Character, error) {
+func GetCharacter(db *DB, characterID string) (models.Character, error) {
 	if db == nil {
-		return Character{}, fmt.Errorf("database connection is nil")
+		return models.Character{}, fmt.Errorf("database connection is nil")
 	}
 
 	if characterID == "" {
-		return Character{}, fmt.Errorf("character ID is required")
+		return models.Character{}, fmt.Errorf("character ID is required")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -171,19 +172,19 @@ func GetCharacter(db *DB, characterID string) (Character, error) {
 
 	objectID, err := primitive.ObjectIDFromHex(characterID)
 	if err != nil {
-		return Character{}, fmt.Errorf("invalid character ID format: %w", err)
+		return models.Character{}, fmt.Errorf("invalid character ID format: %w", err)
 	}
 
 	collection := db.GetCollection(charactersCollection)
 	filter := bson.M{"_id": objectID}
 
-	var character Character
+	var character models.Character
 	err = collection.FindOne(ctx, filter).Decode(&character)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return Character{}, fmt.Errorf("character not found")
+			return models.Character{}, fmt.Errorf("character not found")
 		}
-		return Character{}, fmt.Errorf("failed to query character: %w", err)
+		return models.Character{}, fmt.Errorf("failed to query character: %w", err)
 	}
 
 	return character, nil
