@@ -7,12 +7,20 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// createCharacterEmbed creates a Discord embed message with character details
+// Update CreateCharacterEmbed to show equipped items
 func CreateCharacterEmbed(character models.Character, author *discordgo.User) *discordgo.MessageEmbed {
 	// Get the character characteristics, traits, and stats
 	chars := character.Characteristics
 	stats := character.Stats
 	traits := character.Attributes
+
+	// Create equipment info section
+	var equipmentInfo string
+	if character.EquippedWeapon.ItemName != "" {
+		equipmentInfo = fmt.Sprintf("**Equipped Weapon:** %s", character.EquippedWeapon.ItemName)
+	} else {
+		equipmentInfo = "No weapon equipped"
+	}
 
 	// Create the embed
 	embed := &discordgo.MessageEmbed{
@@ -37,6 +45,11 @@ func CreateCharacterEmbed(character models.Character, author *discordgo.User) *d
 				Name:   "Traits",
 				Value:  formatTraits(traits),
 				Inline: true,
+			},
+			{
+				Name:   "Equipment",
+				Value:  equipmentInfo,
+				Inline: false,
 			},
 		},
 		Footer: &discordgo.MessageEmbedFooter{
@@ -75,18 +88,18 @@ func formatCharacteristics(chars models.Characteristics) string {
 	return charDetails
 }
 
-// formatStats formats the character stats for display
+// Update formatStats to show equipped item bonuses
 func formatStats(stats models.StatsSheets) string {
-	// Create a uniform format for all stats with name, value, and rarity
+	// Create a uniform format for all stats with name, value, equipment bonus, and rarity
 	return fmt.Sprintf(
-		"**Vitality:** %d (%s) [%s]\n**Strength:** %d (%s) [%s]\n**Speed:** %d (%s) [%s]\n**Durability:** %d (%s) [%s]\n**Intelligence:** %d (%s) [%s]\n**Mana:** %d (%s) [%s]\n**Mastery:** %d (%s) [%s]",
-		stats.Vitality.Value, stats.Vitality.Stat_Name, stats.Vitality.Rarity,
-		stats.Strength.Value, stats.Strength.Stat_Name, stats.Strength.Rarity,
-		stats.Speed.Value, stats.Speed.Stat_Name, stats.Speed.Rarity,
-		stats.Durability.Value, stats.Durability.Stat_Name, stats.Durability.Rarity,
-		stats.Intelligence.Value, stats.Intelligence.Stat_Name, stats.Intelligence.Rarity,
-		stats.Mana.Value, stats.Mana.Stat_Name, stats.Mana.Rarity,
-		stats.Mastery.Value, stats.Mastery.Stat_Name, stats.Mastery.Rarity,
+		"**Vitality:** %d%s (%s) [%s]\n**Strength:** %d%s (%s) [%s]\n**Speed:** %d%s (%s) [%s]\n**Durability:** %d%s (%s) [%s]\n**Intelligence:** %d%s (%s) [%s]\n**Mana:** %d%s (%s) [%s]\n**Mastery:** %d%s (%s) [%s]",
+		stats.Vitality.Value, formatEquipBonus(stats.Vitality.EquipBonus), stats.Vitality.Stat_Name, stats.Vitality.Rarity,
+		stats.Strength.Value, formatEquipBonus(stats.Strength.EquipBonus), stats.Strength.Stat_Name, stats.Strength.Rarity,
+		stats.Speed.Value, formatEquipBonus(stats.Speed.EquipBonus), stats.Speed.Stat_Name, stats.Speed.Rarity,
+		stats.Durability.Value, formatEquipBonus(stats.Durability.EquipBonus), stats.Durability.Stat_Name, stats.Durability.Rarity,
+		stats.Intelligence.Value, formatEquipBonus(stats.Intelligence.EquipBonus), stats.Intelligence.Stat_Name, stats.Intelligence.Rarity,
+		stats.Mana.Value, formatEquipBonus(stats.Mana.EquipBonus), stats.Mana.Stat_Name, stats.Mana.Rarity,
+		stats.Mastery.Value, formatEquipBonus(stats.Mastery.EquipBonus), stats.Mastery.Stat_Name, stats.Mastery.Rarity,
 	)
 }
 

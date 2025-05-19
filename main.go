@@ -16,6 +16,9 @@ func main() {
 
 	fmt.Println("Starting CrispyBot...")
 
+	// Start the shop refresh scheduler
+	database.StartShopRefreshScheduler(db)
+
 	// Start the Discord bot
 	go bugou.StartBot()
 

@@ -2,6 +2,7 @@ package models
 
 import (
 	"CrispyBot/variables"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -12,6 +13,20 @@ type Character struct {
 	Characteristics Characteristics    `bson:"characteriastics" json:"characteriastics"`
 	Stats           StatsSheets        `bson:"stats" json:"stats"`
 	Attributes      Traits             `bson:"attributes" json:"attributes"`
+	EquippedWeapon  EquippedItem       `bson:"equippedWeapon" json:"equippedWeapon"`
+}
+
+type EquippedItem struct {
+	ItemKey  string `bson:"itemKey" json:"itemKey"`
+	ItemName string `bson:"itemName" json:"itemName"`
+}
+
+type ItemRecord struct {
+	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	OwnerID      string             `bson:"ownerID" json:"ownerID"`
+	InventoryKey string             `bson:"inventoryKey" json:"inventoryKey"`
+	Item         Item               `bson:"item" json:"item"`
+	Timestamp    time.Time          `bson:"timestamp" json:"timestamp"`
 }
 
 type StatsSheets struct {
@@ -37,10 +52,12 @@ type Characteristics struct {
 }
 
 type Stat struct {
-	Rarity    string             `bson:"rarity" json:"rarity"`
-	Stat_Name string             `bson:"statName" json:"statName"`
-	Type      variables.StatType `bson:"type" json:"type"`
-	Value     int                `bson:"value" json:"value"`
+	Rarity     string             `bson:"rarity" json:"rarity"`
+	Stat_Name  string             `bson:"statName" json:"statName"`
+	Type       variables.StatType `bson:"type" json:"type"`
+	Value      int                `bson:"value" json:"value"`
+	EquipBonus int                `bson:"equipBonus" json:"equipBonus"`
+	TotalValue int                `bson:"totalValue" json:"totalValue"`
 }
 
 type Trait struct {

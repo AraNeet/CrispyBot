@@ -129,7 +129,7 @@ func SaveCharacter(db *DB, character models.Character, discordID string) (models
 	return character, nil
 }
 
-// GetCharacterByOwner retrieves a character by owner ID
+// GetCharacterByOwner retrieves a character by owner ID with equipment stats applied
 func GetCharacterByOwner(db *DB, ownerID string) (models.Character, error) {
 	if db == nil {
 		return models.Character{}, fmt.Errorf("database connection is nil")
@@ -154,10 +154,18 @@ func GetCharacterByOwner(db *DB, ownerID string) (models.Character, error) {
 		return models.Character{}, fmt.Errorf("failed to query character: %w", err)
 	}
 
+	// Apply equipment bonuses if there's an equipped item
+	if character.EquippedWeapon.ItemKey != "" {
+		character = applyEquipmentBonuses(db, character)
+	} else {
+		// Clear any equipment bonuses if nothing is equipped
+		character = clearEquipmentBonuses(character)
+	}
+
 	return character, nil
 }
 
-// GetCharacter retrieves a character by ID
+// GetCharacter retrieves a character by ID with equipment stats applied
 func GetCharacter(db *DB, characterID string) (models.Character, error) {
 	if db == nil {
 		return models.Character{}, fmt.Errorf("database connection is nil")
@@ -185,6 +193,14 @@ func GetCharacter(db *DB, characterID string) (models.Character, error) {
 			return models.Character{}, fmt.Errorf("character not found")
 		}
 		return models.Character{}, fmt.Errorf("failed to query character: %w", err)
+	}
+
+	// Apply equipment bonuses if there's an equipped item
+	if character.EquippedWeapon.ItemKey != "" {
+		character = applyEquipmentBonuses(db, character)
+	} else {
+		// Clear any equipment bonuses if nothing is equipped
+		character = clearEquipmentBonuses(character)
 	}
 
 	return character, nil

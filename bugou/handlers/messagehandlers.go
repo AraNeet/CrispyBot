@@ -7,10 +7,17 @@ import (
 )
 
 const (
-	prefixCommand = "!cb"
-	helpCommand   = "help"
-	rollCommand   = "roll"
-	statCommand   = "stats"
+	prefixCommand    = "!cb"
+	helpCommand      = "help"
+	rollCommand      = "roll"
+	statCommand      = "stats"
+	shopCommand      = "shop"
+	buyCommand       = "buy"
+	walletCommand    = "wallet"
+	dailyCommand     = "daily"
+	inventoryCommand = "inventory"
+	equipCommand     = "equip"
+	unequipCommand   = "unequip"
 )
 
 // MessageCreate handles incoming Discord messages
@@ -43,6 +50,20 @@ func MessageCreate(session *discordgo.Session, message *discordgo.MessageCreate)
 		HandleRollCommand(session, message)
 	case statCommand:
 		HandleStatsCommand(session, message)
+	case shopCommand:
+		HandleShopCommand(session, message)
+	case buyCommand:
+		HandleBuyCommand(session, message, commandParts)
+	case walletCommand:
+		HandleWalletCommand(session, message)
+	case dailyCommand:
+		HandleDailyCommand(session, message)
+	case inventoryCommand:
+		HandleInventoryCommand(session, message)
+	case equipCommand:
+		HandleEquipCommand(session, message, commandParts)
+	case unequipCommand:
+		HandleUnequipCommand(session, message)
 	default:
 		session.ChannelMessageSend(message.ChannelID, "Unknown command. Try `!cb help` for a list of commands.")
 	}
@@ -66,6 +87,34 @@ func SendHelpMessage(session *discordgo.Session, channelID string) {
 			{
 				Name:  "!cb stats",
 				Value: "Shows your character's stats",
+			},
+			{
+				Name:  "!cb shop",
+				Value: "Browse the item shop",
+			},
+			{
+				Name:  "!cb buy [item number]",
+				Value: "Buy an item from the shop",
+			},
+			{
+				Name:  "!cb wallet",
+				Value: "Check your currency balance",
+			},
+			{
+				Name:  "!cb daily",
+				Value: "Collect your daily currency reward",
+			},
+			{
+				Name:  "!cb inventory",
+				Value: "View your inventory of purchased items",
+			},
+			{
+				Name:  "!cb unequip",
+				Value: "Unequip your currently equipped item",
+			},
+			{
+				Name:  "!cb equip [item number]",
+				Value: "Equip an item from your inventory",
 			},
 		},
 		Footer: &discordgo.MessageEmbedFooter{
