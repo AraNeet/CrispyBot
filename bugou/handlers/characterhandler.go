@@ -45,7 +45,7 @@ func HandleStatsCommand(session *discordgo.Session, message *discordgo.MessageCr
 	// Get the user's character
 	character, err := database.GetCharacterByOwner(db, message.Author.ID)
 	if err != nil {
-		text := fmt.Errorf("Error: %w", err)
+		text := fmt.Errorf("error: %w", err)
 		session.ChannelMessageSend(message.ChannelID, text.Error())
 		return
 	}
