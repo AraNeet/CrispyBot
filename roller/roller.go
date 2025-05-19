@@ -34,13 +34,13 @@ func GenerateCharacter(ownerID string) models.Character {
 // Generate random stats based on rarity
 func generateStats(rng *rand.Rand) models.StatsSheets {
 	// Generate each stat
-	vitality := generateStat(variables.Vitality, VitalityRarity, rng)
-	durability := generateStat(variables.Durability, DurabilityRarity, rng)
-	speed := generateStat(variables.Speed, SpeedRarity, rng)
-	strength := generateStat(variables.Strength, StrengthRarity, rng)
-	intelligence := generateStat(variables.Intelligence, IntelligenceRarity, rng)
-	mana := generateStat(variables.Mana, ManaRarity, rng)
-	mastery := generateStat(variables.Mastery, MasteryRarity, rng)
+	vitality := GenerateStat(variables.Vitality, VitalityRarity, rng)
+	durability := GenerateStat(variables.Durability, DurabilityRarity, rng)
+	speed := GenerateStat(variables.Speed, SpeedRarity, rng)
+	strength := GenerateStat(variables.Strength, StrengthRarity, rng)
+	intelligence := GenerateStat(variables.Intelligence, IntelligenceRarity, rng)
+	mana := GenerateStat(variables.Mana, ManaRarity, rng)
+	mastery := GenerateStat(variables.Mastery, MasteryRarity, rng)
 
 	return models.StatsSheets{
 		Vitality:     vitality,
@@ -54,7 +54,7 @@ func generateStats(rng *rand.Rand) models.StatsSheets {
 }
 
 // Generate a single stat with random rarity
-func generateStat(statType variables.StatType, rarityMap map[string][]string, rng *rand.Rand) models.Stat {
+func GenerateStat(statType variables.StatType, rarityMap map[string][]string, rng *rand.Rand) models.Stat {
 	// First, select a trait name using RollRarityTrait
 	statName := RollRarityTrait(rarityMap, config, rng)
 

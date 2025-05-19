@@ -7,17 +7,21 @@ import (
 )
 
 const (
-	prefixCommand    = "!cb"
-	helpCommand      = "help"
-	rollCommand      = "roll"
-	statCommand      = "stats"
-	shopCommand      = "shop"
-	buyCommand       = "buy"
-	walletCommand    = "wallet"
-	dailyCommand     = "daily"
-	inventoryCommand = "inventory"
-	equipCommand     = "equip"
-	unequipCommand   = "unequip"
+	prefixCommand       = "!cb"
+	helpCommand         = "help"
+	rollCommand         = "roll"
+	statCommand         = "stats"
+	shopCommand         = "shop"
+	buyCommand          = "buy"
+	walletCommand       = "wallet"
+	dailyCommand        = "daily"
+	inventoryCommand    = "inventory"
+	equipCommand        = "equip"
+	unequipCommand      = "unequip"
+	rerollCommand       = "reroll"
+	rerollStatCommand   = "rerollstat"
+	rerollStatusCommand = "rerolls"
+	deleteCommand       = "delete"
 )
 
 // MessageCreate handles incoming Discord messages
@@ -64,6 +68,14 @@ func MessageCreate(session *discordgo.Session, message *discordgo.MessageCreate)
 		HandleEquipCommand(session, message, commandParts)
 	case unequipCommand:
 		HandleUnequipCommand(session, message)
+	case rerollCommand:
+		HandleFullRerollCommand(session, message)
+	case rerollStatCommand:
+		HandleStatRerollCommand(session, message, commandParts)
+	case rerollStatusCommand:
+		HandleRerollStatusCommand(session, message)
+	case deleteCommand:
+		HandleDeleteCharacterRequest(session, message)
 	default:
 		session.ChannelMessageSend(message.ChannelID, "Unknown command. Try `!cb help` for a list of commands.")
 	}
@@ -115,6 +127,22 @@ func SendHelpMessage(session *discordgo.Session, channelID string) {
 			{
 				Name:  "!cb equip [item number]",
 				Value: "Equip an item from your inventory",
+			},
+			{
+				Name:  "!cb reroll",
+				Value: "Reroll your entire character (2 per day)",
+			},
+			{
+				Name:  "!cb rerollstat [stat name]",
+				Value: "Reroll a specific stat (1 per day)",
+			},
+			{
+				Name:  "!cb rerolls",
+				Value: "Check your remaining rerolls for the day",
+			},
+			{
+				Name:  "!cb delete",
+				Value: "Delete your current character (requires confirmation)",
 			},
 		},
 		Footer: &discordgo.MessageEmbedFooter{

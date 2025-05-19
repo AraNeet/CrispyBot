@@ -2,8 +2,11 @@ package database
 
 import (
 	"CrispyBot/database/models"
+	"CrispyBot/roller"
+	"CrispyBot/variables"
 	"context"
 	"fmt"
+	"math/rand"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -45,9 +48,13 @@ func CreateUser(db *DB, userID string) (models.User, error) {
 		return models.User{}, fmt.Errorf("error checking for existing user: %w", err)
 	}
 
-	// Create new user
+	// Create new user with initial reroll counts
 	newUser := models.User{
-		DiscordID: userID,
+		DiscordID:       userID,
+		Wallet:          0,
+		FullRerolls:     2,
+		StatRerolls:     1,
+		LastRerollReset: time.Now(),
 	}
 
 	result, err := collection.InsertOne(ctx, newUser)
@@ -129,6 +136,46 @@ func SaveCharacter(db *DB, character models.Character, discordID string) (models
 	return character, nil
 }
 
+// DeleteCharacter removes a character from the database
+func DeleteCharacter(db *DB, userID string) error {
+	if db == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+
+	if userID == "" {
+		return fmt.Errorf("user ID is required")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// First, get the character to ensure it exists
+	character, err := GetCharacterByOwner(db, userID)
+	if err != nil {
+		return fmt.Errorf("no character found for this user: %w", err)
+	}
+
+	// Delete the character from the characters collection
+	charCollection := db.GetCollection(charactersCollection)
+	_, err = charCollection.DeleteOne(ctx, character)
+	if err != nil {
+		return fmt.Errorf("failed to delete character: %w", err)
+	}
+
+	// Also remove the character reference from the user document
+	userCollection := db.GetCollection(usersCollection)
+	_, err = userCollection.UpdateOne(
+		ctx,
+		bson.M{"discordID": userID},
+		bson.M{"$unset": bson.M{"character": ""}},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to update user after character deletion: %w", err)
+	}
+
+	return nil
+}
+
 // GetCharacterByOwner retrieves a character by owner ID with equipment stats applied
 func GetCharacterByOwner(db *DB, ownerID string) (models.Character, error) {
 	if db == nil {
@@ -204,4 +251,158 @@ func GetCharacter(db *DB, characterID string) (models.Character, error) {
 	}
 
 	return character, nil
+}
+
+// ResetRerollCounts resets a user's reroll counts to daily limit
+func ResetRerollCounts(db *DB, userID string) error {
+	if db == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	userCollection := db.GetCollection(usersCollection)
+
+	// Update the user's reroll counts
+	_, err := userCollection.UpdateOne(
+		ctx,
+		bson.M{"discordID": userID},
+		bson.M{"$set": bson.M{
+			"fullRerolls":     2,
+			"statRerolls":     1,
+			"lastRerollReset": time.Now(),
+		}},
+	)
+
+	if err != nil {
+		return fmt.Errorf("failed to reset reroll counts: %w", err)
+	}
+
+	return nil
+}
+
+// UseFullReroll decrements a user's full reroll count
+func UseFullReroll(db *DB, userID string) (int, error) {
+	if db == nil {
+		return 0, fmt.Errorf("database connection is nil")
+	}
+
+	// Get the user to check current reroll count
+	user, err := GetUserByID(db, userID)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get user: %w", err)
+	}
+
+	if user.FullRerolls <= 0 {
+		return 0, fmt.Errorf("no full rerolls remaining today")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	userCollection := db.GetCollection(usersCollection)
+
+	// Decrement full reroll count
+	remainingRerolls := user.FullRerolls - 1
+	_, err = userCollection.UpdateOne(
+		ctx,
+		bson.M{"discordID": userID},
+		bson.M{"$set": bson.M{"fullRerolls": remainingRerolls}},
+	)
+
+	if err != nil {
+		return user.FullRerolls, fmt.Errorf("failed to use full reroll: %w", err)
+	}
+
+	return remainingRerolls, nil
+}
+
+// UseStatReroll decrements a user's stat reroll count
+func UseStatReroll(db *DB, userID string) (int, error) {
+	if db == nil {
+		return 0, fmt.Errorf("database connection is nil")
+	}
+
+	// Get the user to check current reroll count
+	user, err := GetUserByID(db, userID)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get user: %w", err)
+	}
+
+	if user.StatRerolls <= 0 {
+		return 0, fmt.Errorf("no stat rerolls remaining today")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	userCollection := db.GetCollection(usersCollection)
+
+	// Decrement stat reroll count
+	remainingRerolls := user.StatRerolls - 1
+	_, err = userCollection.UpdateOne(
+		ctx,
+		bson.M{"discordID": userID},
+		bson.M{"$set": bson.M{"statRerolls": remainingRerolls}},
+	)
+
+	if err != nil {
+		return user.StatRerolls, fmt.Errorf("failed to use stat reroll: %w", err)
+	}
+
+	return remainingRerolls, nil
+}
+
+// RerollSingleStat rerolls a specific stat for a character
+func RerollSingleStat(db *DB, userID string, statType variables.StatType) (models.Stat, error) {
+	// Create RNG for reroll
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	// Generate the new stat based on type
+	var newStat models.Stat
+	var statField string
+
+	switch statType {
+	case variables.Vitality:
+		newStat = roller.GenerateStat(variables.Vitality, roller.VitalityRarity, rng)
+		statField = "stats.vitality"
+	case variables.Durability:
+		newStat = roller.GenerateStat(variables.Durability, roller.DurabilityRarity, rng)
+		statField = "stats.durability"
+	case variables.Speed:
+		newStat = roller.GenerateStat(variables.Speed, roller.SpeedRarity, rng)
+		statField = "stats.speed"
+	case variables.Strength:
+		newStat = roller.GenerateStat(variables.Strength, roller.StrengthRarity, rng)
+		statField = "stats.strength"
+	case variables.Intelligence:
+		newStat = roller.GenerateStat(variables.Intelligence, roller.IntelligenceRarity, rng)
+		statField = "stats.intelligence"
+	case variables.Mana:
+		newStat = roller.GenerateStat(variables.Mana, roller.ManaRarity, rng)
+		statField = "stats.mana"
+	case variables.Mastery:
+		newStat = roller.GenerateStat(variables.Mastery, roller.MasteryRarity, rng)
+		statField = "stats.mastery"
+	default:
+		return models.Stat{}, fmt.Errorf("invalid stat type")
+	}
+
+	// Update the character in the database
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	charCollection := db.GetCollection(charactersCollection)
+	_, err := charCollection.UpdateOne(
+		ctx,
+		bson.M{"owner": userID},
+		bson.M{"$set": bson.M{statField: newStat}},
+	)
+
+	if err != nil {
+		return models.Stat{}, fmt.Errorf("failed to update character: %w", err)
+	}
+
+	return newStat, nil
 }

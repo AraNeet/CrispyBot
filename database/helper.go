@@ -2,9 +2,41 @@ package database
 
 import (
 	"CrispyBot/database/models"
+	"context"
 	"fmt"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
+
+// resetAllUsersRerolls resets reroll counts for all users
+func resetAllUsersRerolls(db *DB) {
+	if db == nil {
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	userCollection := db.GetCollection(usersCollection)
+
+	// Update all users
+	_, err := userCollection.UpdateMany(
+		ctx,
+		bson.M{}, // Match all documents
+		bson.M{"$set": bson.M{
+			"fullRerolls":     2,
+			"statRerolls":     1,
+			"lastRerollReset": time.Now(),
+		}},
+	)
+
+	if err != nil {
+		fmt.Printf("Error resetting reroll counts: %v\n", err)
+	} else {
+		fmt.Println("Successfully reset reroll counts for all users")
+	}
+}
 
 // StartShopRefreshScheduler starts a goroutine to check and refresh the shop periodically
 func StartShopRefreshScheduler(db *DB) {
@@ -44,6 +76,9 @@ func checkAndRefreshShop(db *DB) error {
 	if time.Now().After(shop.Timer) {
 		fmt.Println("Shop timer expired, refreshing shop")
 		RefreshShop(db, shop)
+
+		// Reset all users' reroll counts
+		resetAllUsersRerolls(db)
 	}
 
 	return nil
