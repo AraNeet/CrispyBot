@@ -19,7 +19,7 @@ func GenerateCharacter(ownerID string) database.Character {
 
 	// Create the character
 	character := database.Character{
-		ID:         ownerID,
+		Owner:      ownerID,
 		Stats:      stats,
 		Attributes: attributes,
 	}
@@ -36,8 +36,8 @@ func generateStats(rng *rand.Rand) database.StatsSheets {
 	speed := generateStat(variables.Speed, SpeedRarity, rng)
 	strength := generateStat(variables.Strength, StrengthRarity, rng)
 	intelligence := generateStat(variables.Intelligence, IntelligenceRarity, rng)
-	manaFlow := generateStat(variables.ManaFlow, ManaFlowRarity, rng)
-	skillLevel := generateStat(variables.SkillLevel, SkillLevelRarity, rng)
+	mana := generateStat(variables.Mana, ManaRarity, rng)
+	mastery := generateStat(variables.Mastery, MasteryRarity, rng)
 
 	return database.StatsSheets{
 		Vitality:     vitality,
@@ -45,8 +45,8 @@ func generateStats(rng *rand.Rand) database.StatsSheets {
 		Speed:        speed,
 		Strength:     strength,
 		Intelligence: intelligence,
-		ManaFlow:     manaFlow,
-		SkillLevel:   skillLevel,
+		Mana:         mana,
+		Mastery:      mastery,
 	}
 }
 
@@ -91,12 +91,12 @@ func getStatBaseValue(statType variables.StatType, statName string) int {
 		if val, ok := variables.IntelligenceValue[statName]; ok {
 			value = val
 		}
-	case variables.ManaFlow:
-		if val, ok := variables.ManaFlowValue[statName]; ok {
+	case variables.Mana:
+		if val, ok := variables.ManaValue[statName]; ok {
 			value = val
 		}
-	case variables.SkillLevel:
-		if val, ok := variables.SkillLevelValue[statName]; ok {
+	case variables.Mastery:
+		if val, ok := variables.MasteryValue[statName]; ok {
 			value = val
 		}
 	}
@@ -110,40 +110,27 @@ func getStatBaseValue(statType variables.StatType, statName string) int {
 }
 
 // Generate character attributes
-func generateAttributes(rng *rand.Rand) database.Attributes {
-
-	// Generate race trait
-	raceTrait := generateRaceTrait(rng)
-
-	// Generate element trait
-	elementTrait := generateElementTrait(rng)
-
+func generateAttributes(rng *rand.Rand) database.Traits {
 	// Generate extra trait
-	extraTrait := generateExtraTrait(rng)
+	innateTrait := generateExtraTrait(rng)
 
 	// Generate weakness trait
-	weaknessTrait := generateWeaknessTrait(rng)
-
-	// Generate alignment trait
-	alignmentTrait := generateAlignmentTrait(rng)
+	inadequacyTrait := generateWeaknessTrait(rng)
 
 	// Generate x-factor trait
 	xFactorTrait := generateXFactorTrait(rng)
 
-	return database.Attributes{
-		Race:      raceTrait,
-		Element:   elementTrait,
-		Trait:     extraTrait,
-		Weakness:  weaknessTrait,
-		Alignment: alignmentTrait,
-		X_Factor:  xFactorTrait,
+	return database.Traits{
+		Innate:     innateTrait,
+		Inadequacy: inadequacyTrait,
+		X_Factor:   xFactorTrait,
 	}
 }
 
 // Generate a race trait
 func generateRaceTrait(rng *rand.Rand) database.Trait {
-	raceName := RollRarityTrait(RacesRarity, config, rng)
-	rarity := getTierForTrait(raceName, RacesRarity)
+	raceName := RollRarityTrait(RaceRarity, config, rng)
+	rarity := getTierForTrait(raceName, RaceRarity)
 
 	// Get race stat values
 	statsValues := make(map[string]int)
