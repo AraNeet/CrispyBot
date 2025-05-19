@@ -6,7 +6,7 @@ type WeightedOption struct {
 }
 
 var (
-	RacesRarity = map[string][]string{
+	RaceRarity = map[string][]string{
 		"Common":    {"Humans", "Gnome", "Orc", "Giant", "Kobold", "Goblin", "Skeleton"},
 		"Uncommon":  {"Drawf", "Elf", "Centaur", "Minotaur", "Cyclops", "Mushfolk", "Beastfolk", "Lamia", "Undead", "Harpy"},
 		"Rare":      {"Dullahan", "Merfolk", "Fairy", "Druid", "Vampire", "Werewolf", "Ghost"},
@@ -54,7 +54,7 @@ var (
 		"Legandary": {"Mindless-", "Prodigious+"},
 	}
 
-	ManaFlowRarity = map[string][]string{
+	ManaRarity = map[string][]string{
 		"Common":    {"Average"},
 		"Uncommon":  {"Hexed", "Enchanted"},
 		"Rare":      {"Lowly", "Conjuring"},
@@ -62,7 +62,7 @@ var (
 		"Legandary": {"No-Mana", "Overflowing+"},
 	}
 
-	SkillLevelRarity = map[string][]string{
+	MasteryRarity = map[string][]string{
 		"Common":    {"Average"},
 		"Uncommon":  {"Amateur", "Skilled"},
 		"Rare":      {"Novice", "Expert"},
@@ -70,7 +70,7 @@ var (
 		"Legandary": {"Skill-less-", "Mastered+"},
 	}
 
-	ExtraTraitRarity = map[string][]string{
+	InnateRarity = map[string][]string{
 		"Common":    {"None", "Swift", "Quick Thinker", "Rough Skin", "Castle Training"},
 		"Uncommon":  {"Fast Learner", "Abounding Flow", "Big Boned"},
 		"Rare":      {"Druid's Blessing", "Naturally Skilled"},
@@ -78,7 +78,7 @@ var (
 		"Legandary": {"Blessed", "Isekai Protag"},
 	}
 
-	WeaknessOptions = []WeightedOption{
+	InadequacyOptions = []WeightedOption{
 		{Value: "None", Weight: 40},
 		{Value: "Fragile Bone", Weight: 10},
 		{Value: "STD", Weight: 10},

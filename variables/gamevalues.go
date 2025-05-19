@@ -1,11 +1,11 @@
 package variables
 
 const (
-	Common_Chance    = 60
-	Uncommon_Chance  = 20
-	Rare_Chance      = 10
-	Epic_Chance      = 7
-	Legendary_Chance = 3
+	Common_Chance    = 50
+	Uncommon_Chance  = 25
+	Rare_Chance      = 15
+	Epic_Chance      = 8
+	Legendary_Chance = 2
 )
 
 var (
@@ -19,6 +19,18 @@ var (
 		"Robust":    166,
 		"Vigorous":  180,
 		"Vigorous+": 200,
+	}
+
+	IntelligenceValue = map[string]float64{
+		"Mindless-":   0,
+		"Mindless":    45.75,
+		"Lobotomized": 85.75,
+		"Dumb":        110,
+		"Average":     127.5,
+		"Smart":       145.5,
+		"Genius":      166,
+		"Prodigious":  180,
+		"Prodigious+": 200,
 	}
 
 	StrengthValue = map[string]float64{
@@ -57,19 +69,7 @@ var (
 		"Fortified+":   200,
 	}
 
-	IntelligenceValue = map[string]float64{
-		"Mindless-":   0,
-		"Mindless":    45.75,
-		"Lobotomized": 85.75,
-		"Dumb":        110,
-		"Average":     127.5,
-		"Smart":       145.5,
-		"Genius":      166,
-		"Prodigious":  180,
-		"Prodigious+": 200,
-	}
-
-	ManaFlowValue = map[string]float64{
+	ManaValue = map[string]float64{
 		"No-Mana":      0,
 		"Mana-less":    45.75,
 		"Lowly":        85.75,
@@ -81,7 +81,7 @@ var (
 		"Overflowing+": 200,
 	}
 
-	SkillLevelValue = map[string]float64{
+	MasteryValue = map[string]float64{
 		"Skill-Less-": 0,
 		"Skill-Less":  45.75,
 		"Novice":      85.75,
@@ -93,7 +93,7 @@ var (
 		"Mastered+":   200,
 	}
 
-	ExtraTraitValues = map[string][]map[string]float64{
+	InnateValues = map[string][]map[string]float64{
 		"Blessed":           {{"Vitality": 50, "Strength": 50, "Intelligence": 50, "Durability": 50, "Speed": 50, "SkillLevel": 50, "ManaFlow": 50}},
 		"Speed Force":       {{"Speed": 75}},
 		"Fast Learner":      {{"Intelligence": 75}},
@@ -110,7 +110,7 @@ var (
 		"None":              {{}},
 	}
 
-	WeaknessValues = map[string][]map[string]float64{
+	InadequacyValues = map[string][]map[string]float64{
 		"Fragile Bone":        {{"Vitality": 25, "Durability": 25}},
 		"STD":                 {{"Strength": 25}},
 		"Cancer":              {{"Strength": 25}},

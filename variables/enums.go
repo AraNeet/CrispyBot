@@ -2,22 +2,27 @@ package variables
 
 type StatType int
 type TraitType int
+type CharacteristicType int
 
 const (
 	Vitality StatType = iota
-	Intelligence
-	Strength
 	Durability
+	Strength
 	Speed
-	SkillLevel
-	ManaFlow
-	Height
-	Alignment
+	Intelligence
+	Mastery
+	Mana
 )
 
 const (
-	Buff TraitType = iota
-	Weakness
+	Innate TraitType = iota
+	Inadequacy
 	X_Factor
+)
+
+const (
+	Alignment CharacteristicType = iota
 	Race
+	Height
+	Element
 )

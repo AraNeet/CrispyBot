@@ -1,103 +1,109 @@
 package database
 
 import (
-	"CrispyBot/variables"
-	"database/sql"
+	"context"
 	"fmt"
+	"os"
+	"sync"
+	"time"
 
-	_ "github.com/lib/pq" // PostgreSQL driver
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-// Connect establishes a connection to the PostgreSQL database
-func Connect() *sql.DB {
-	// Open the PostgreSQL database
-	db, err := sql.Open("postgres", variables.DB)
-	if err != nil {
-		panic(fmt.Errorf("failed to connect to database: %w", err))
-	}
+var (
+	mongodb_uri string = os.Getenv("MONGODB_URI")
+	db_name     string = os.Getenv("DB_NAME")
 
-	// Test the connection
-	if err = db.Ping(); err != nil {
-		panic(fmt.Errorf("failed to ping database: %w", err))
-	}
+	// Singleton instance of the database connection
+	instance *DB
+	once     sync.Once
+)
 
-	// Initialize the database schema
-	if err = initializeSchema(db); err != nil {
-		panic(fmt.Errorf("failed to initialize database schema: %w", err))
-	}
-
-	return db
+// DB represents a MongoDB client and database
+type DB struct {
+	Client   *mongo.Client
+	Database *mongo.Database
 }
 
-// initializeSchema creates all necessary tables if they don't exist
-func initializeSchema(db *sql.DB) error {
-	// Create the users table
-	_, err := db.Exec(`
-		CREATE TABLE IF NOT EXISTS users (
-			discord_id TEXT PRIMARY KEY
-		)
-	`)
-	if err != nil {
-		return fmt.Errorf("failed to create users table: %w", err)
+// GetDB returns the singleton database instance
+func GetDB() *DB {
+	once.Do(func() {
+		instance = connectToDB()
+	})
+	return instance
+}
+
+// connectToDB establishes connection to MongoDB and returns a DB
+func connectToDB() *DB {
+	fmt.Println("Connecting to MongoDB...")
+
+	// If MONGODB_URI is not set, use a default local connection
+	if mongodb_uri == "" {
+		mongodb_uri = "mongodb://localhost:27017"
+		fmt.Println("MONGODB_URI not set, using default:", mongodb_uri)
+	} else {
+		fmt.Println("Using MONGODB_URI from environment")
 	}
 
-	// Create the characters table
-	_, err = db.Exec(`
-		CREATE TABLE IF NOT EXISTS characters (
-			id TEXT PRIMARY KEY,
-			owner TEXT NOT NULL,
-			FOREIGN KEY(owner) REFERENCES users(discord_id)
-		)
-	`)
-	if err != nil {
-		return fmt.Errorf("failed to create characters table: %w", err)
+	// If DB name is not set, use a default
+	if db_name == "" {
+		db_name = "crispybot"
+		fmt.Println("DB name not set, using default:", db_name)
 	}
 
-	// Create the stats table with a SERIAL primary key for PostgreSQL
-	_, err = db.Exec(`
-		CREATE TABLE IF NOT EXISTS stats (
-			id SERIAL PRIMARY KEY,
-			character_id TEXT NOT NULL,
-			stat_type INTEGER NOT NULL,
-			stat_name TEXT NOT NULL,
-			rarity TEXT NOT NULL,
-			value INTEGER NOT NULL,
-			FOREIGN KEY(character_id) REFERENCES characters(id)
-		)
-	`)
+	// Set up MongoDB connection options
+	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+	opts := options.Client().
+		ApplyURI(mongodb_uri).
+		SetServerAPIOptions(serverAPI)
+
+	// Create a new client and connect to the server with a timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(ctx, opts)
 	if err != nil {
-		return fmt.Errorf("failed to create stats table: %w", err)
+		panic(fmt.Sprintf("Failed to connect to MongoDB: %v", err))
 	}
 
-	// Create the traits table with a SERIAL primary key
-	_, err = db.Exec(`
-		CREATE TABLE IF NOT EXISTS traits (
-			id SERIAL PRIMARY KEY,
-			character_id TEXT NOT NULL,
-			trait_type INTEGER NOT NULL,
-			trait_name TEXT NOT NULL,
-			rarity TEXT NOT NULL,
-			trait_category TEXT NOT NULL,
-			FOREIGN KEY(character_id) REFERENCES characters(id)
-		)
-	`)
-	if err != nil {
-		return fmt.Errorf("failed to create traits table: %w", err)
+	// Verify the connection
+	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := client.Ping(ctx, readpref.Primary()); err != nil {
+		panic(fmt.Sprintf("Failed to ping MongoDB: %v", err))
 	}
 
-	// Create the trait_stat_values table with a SERIAL primary key
-	_, err = db.Exec(`
-		CREATE TABLE IF NOT EXISTS trait_stat_values (
-			id SERIAL PRIMARY KEY,
-			trait_id INTEGER NOT NULL,
-			stat_name TEXT NOT NULL,
-			value INTEGER NOT NULL,
-			FOREIGN KEY(trait_id) REFERENCES traits(id)
-		)
-	`)
-	if err != nil {
-		return fmt.Errorf("failed to create trait_stat_values table: %w", err)
-	}
+	fmt.Println("Successfully connected to MongoDB database:", db_name)
 
-	return nil
+	// Get the database
+	database := client.Database(db_name)
+
+	return &DB{
+		Client:   client,
+		Database: database,
+	}
+}
+
+// Close closes the database connection
+func (db *DB) Close() {
+	if db != nil && db.Client != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := db.Client.Disconnect(ctx); err != nil {
+			fmt.Printf("Error disconnecting from MongoDB: %v\n", err)
+		} else {
+			fmt.Println("Successfully disconnected from MongoDB")
+		}
+	}
+}
+
+// GetCollection returns a handle to the specified collection
+func (db *DB) GetCollection(name string) *mongo.Collection {
+	if db == nil || db.Database == nil {
+		panic("Database connection not initialized")
+	}
+	return db.Database.Collection(name)
 }
