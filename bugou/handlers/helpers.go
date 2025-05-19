@@ -88,18 +88,18 @@ func formatCharacteristics(chars models.Characteristics) string {
 	return charDetails
 }
 
-// Update formatStats to show equipped item bonuses
+// Updated formatStats to show both equipped item and trait bonuses
 func formatStats(stats models.StatsSheets) string {
-	// Create a uniform format for all stats with name, value, equipment bonus, and rarity
+	// Create a uniform format for all stats with name, value, equipment and trait bonuses, and rarity
 	return fmt.Sprintf(
-		"**Vitality:** %d%s (%s) [%s]\n**Strength:** %d%s (%s) [%s]\n**Speed:** %d%s (%s) [%s]\n**Durability:** %d%s (%s) [%s]\n**Intelligence:** %d%s (%s) [%s]\n**Mana:** %d%s (%s) [%s]\n**Mastery:** %d%s (%s) [%s]",
-		stats.Vitality.Value, formatEquipBonus(stats.Vitality.EquipBonus), stats.Vitality.Stat_Name, stats.Vitality.Rarity,
-		stats.Strength.Value, formatEquipBonus(stats.Strength.EquipBonus), stats.Strength.Stat_Name, stats.Strength.Rarity,
-		stats.Speed.Value, formatEquipBonus(stats.Speed.EquipBonus), stats.Speed.Stat_Name, stats.Speed.Rarity,
-		stats.Durability.Value, formatEquipBonus(stats.Durability.EquipBonus), stats.Durability.Stat_Name, stats.Durability.Rarity,
-		stats.Intelligence.Value, formatEquipBonus(stats.Intelligence.EquipBonus), stats.Intelligence.Stat_Name, stats.Intelligence.Rarity,
-		stats.Mana.Value, formatEquipBonus(stats.Mana.EquipBonus), stats.Mana.Stat_Name, stats.Mana.Rarity,
-		stats.Mastery.Value, formatEquipBonus(stats.Mastery.EquipBonus), stats.Mastery.Stat_Name, stats.Mastery.Rarity,
+		"**Vitality:** %d%s%s = %d (%s) [%s]\n**Strength:** %d%s%s = %d (%s) [%s]\n**Speed:** %d%s%s = %d (%s) [%s]\n**Durability:** %d%s%s = %d (%s) [%s]\n**Intelligence:** %d%s%s = %d (%s) [%s]\n**Mana:** %d%s%s = %d (%s) [%s]\n**Mastery:** %d%s%s = %d (%s) [%s]",
+		stats.Vitality.Value, formatEquipBonus(stats.Vitality.EquipBonus), formatTraitBonus(stats.Vitality.TraitBonus), stats.Vitality.TotalValue, stats.Vitality.Stat_Name, stats.Vitality.Rarity,
+		stats.Strength.Value, formatEquipBonus(stats.Strength.EquipBonus), formatTraitBonus(stats.Strength.TraitBonus), stats.Strength.TotalValue, stats.Strength.Stat_Name, stats.Strength.Rarity,
+		stats.Speed.Value, formatEquipBonus(stats.Speed.EquipBonus), formatTraitBonus(stats.Speed.TraitBonus), stats.Speed.TotalValue, stats.Speed.Stat_Name, stats.Speed.Rarity,
+		stats.Durability.Value, formatEquipBonus(stats.Durability.EquipBonus), formatTraitBonus(stats.Durability.TraitBonus), stats.Durability.TotalValue, stats.Durability.Stat_Name, stats.Durability.Rarity,
+		stats.Intelligence.Value, formatEquipBonus(stats.Intelligence.EquipBonus), formatTraitBonus(stats.Intelligence.TraitBonus), stats.Intelligence.TotalValue, stats.Intelligence.Stat_Name, stats.Intelligence.Rarity,
+		stats.Mana.Value, formatEquipBonus(stats.Mana.EquipBonus), formatTraitBonus(stats.Mana.TraitBonus), stats.Mana.TotalValue, stats.Mana.Stat_Name, stats.Mana.Rarity,
+		stats.Mastery.Value, formatEquipBonus(stats.Mastery.EquipBonus), formatTraitBonus(stats.Mastery.TraitBonus), stats.Mastery.TotalValue, stats.Mastery.Stat_Name, stats.Mastery.Rarity,
 	)
 }
 
@@ -158,4 +158,24 @@ func formatTraits(traits models.Traits) string {
 	}
 
 	return traitDetails
+}
+
+// Helper function to format equipment bonus
+func formatEquipBonus(bonus int) string {
+	if bonus > 0 {
+		return fmt.Sprintf(" +%d", bonus)
+	} else if bonus < 0 {
+		return fmt.Sprintf(" %d", bonus)
+	}
+	return ""
+}
+
+// Helper function to format trait bonus
+func formatTraitBonus(bonus int) string {
+	if bonus > 0 {
+		return fmt.Sprintf(" +%d", bonus)
+	} else if bonus < 0 {
+		return fmt.Sprintf(" %d", bonus)
+	}
+	return ""
 }

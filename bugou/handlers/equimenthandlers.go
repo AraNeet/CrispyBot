@@ -112,13 +112,3 @@ func HandleUnequipCommand(session *discordgo.Session, message *discordgo.Message
 
 	session.ChannelMessageSendEmbed(message.ChannelID, unequipEmbed)
 }
-
-// Helper function to format equipment bonus
-func formatEquipBonus(bonus int) string {
-	if bonus > 0 {
-		return fmt.Sprintf(" (+%d)", bonus)
-	} else if bonus < 0 {
-		return fmt.Sprintf(" (%d)", bonus)
-	}
-	return ""
-}

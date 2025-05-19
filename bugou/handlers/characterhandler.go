@@ -28,14 +28,22 @@ func HandleRollCommand(session *discordgo.Session, message *discordgo.MessageCre
 	newCharacter := roller.GenerateCharacter(message.Author.ID)
 
 	// Save to the database
-	savedChar, err := database.SaveCharacter(db, newCharacter, message.Author.ID)
+	_, err = database.SaveCharacter(db, newCharacter, message.Author.ID)
 	if err != nil {
 		session.ChannelMessageSend(message.ChannelID, fmt.Sprintf("Error generating character: %v", err))
 		return
 	}
 
+	// Get the user's character
+	character, err := database.GetCharacterByOwner(db, message.Author.ID)
+	if err != nil {
+		text := fmt.Errorf("error: %w", err)
+		session.ChannelMessageSend(message.ChannelID, text.Error())
+		return
+	}
+
 	// Create an embed message with the character details
-	charEmbed := CreateCharacterEmbed(savedChar, message.Author)
+	charEmbed := CreateCharacterEmbed(character, message.Author)
 	session.ChannelMessageSendEmbed(message.ChannelID, charEmbed)
 }
 

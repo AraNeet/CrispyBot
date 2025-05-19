@@ -57,6 +57,7 @@ type Stat struct {
 	Type       variables.StatType `bson:"type" json:"type"`
 	Value      int                `bson:"value" json:"value"`
 	EquipBonus int                `bson:"equipBonus" json:"equipBonus"`
+	TraitBonus int                `json:"traitBonus"` // New field for trait bonuses (not stored in DB)
 	TotalValue int                `bson:"totalValue" json:"totalValue"`
 }
 

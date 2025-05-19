@@ -30,7 +30,7 @@ func HandleInventoryCommand(session *discordgo.Session, message *discordgo.Messa
 	}
 
 	// Add inventory items to the embed
-	if user.Inventory == nil || len(user.Inventory) == 0 {
+	if len(user.Inventory) == 0 {
 		inventoryEmbed.Fields = append(inventoryEmbed.Fields, &discordgo.MessageEmbedField{
 			Name:  "Empty Inventory",
 			Value: "You don't have any items yet. Visit the shop with `!cb shop` to buy some!",

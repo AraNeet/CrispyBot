@@ -130,9 +130,9 @@ func applyEquipmentBonuses(db *DB, character models.Character) models.Character 
 	return character
 }
 
-// clearEquipmentBonuses removes equipment bonuses from character stats
+// clearEquipmentBonuses removes all bonuses from character stats
 func clearEquipmentBonuses(character models.Character) models.Character {
-	// Reset all equipment bonuses to 0
+	// Reset all equipment and trait bonuses to 0
 	character.Stats.Vitality.EquipBonus = 0
 	character.Stats.Strength.EquipBonus = 0
 	character.Stats.Speed.EquipBonus = 0
@@ -140,6 +140,14 @@ func clearEquipmentBonuses(character models.Character) models.Character {
 	character.Stats.Intelligence.EquipBonus = 0
 	character.Stats.Mana.EquipBonus = 0
 	character.Stats.Mastery.EquipBonus = 0
+
+	character.Stats.Vitality.TraitBonus = 0
+	character.Stats.Strength.TraitBonus = 0
+	character.Stats.Speed.TraitBonus = 0
+	character.Stats.Durability.TraitBonus = 0
+	character.Stats.Intelligence.TraitBonus = 0
+	character.Stats.Mana.TraitBonus = 0
+	character.Stats.Mastery.TraitBonus = 0
 
 	// Set total values equal to base values
 	character.Stats.Vitality.TotalValue = character.Stats.Vitality.Value
@@ -149,6 +157,86 @@ func clearEquipmentBonuses(character models.Character) models.Character {
 	character.Stats.Intelligence.TotalValue = character.Stats.Intelligence.Value
 	character.Stats.Mana.TotalValue = character.Stats.Mana.Value
 	character.Stats.Mastery.TotalValue = character.Stats.Mastery.Value
+
+	return character
+}
+
+// applyTraitBonuses applies trait bonuses (innate and inadequacy) to character stats
+func applyTraitBonuses(character models.Character) models.Character {
+	// Apply Innate trait bonuses
+	if character.Attributes.Innate.Stats_Value != nil {
+		for statName, value := range character.Attributes.Innate.Stats_Value {
+			switch statName {
+			case "Vitality":
+				character.Stats.Vitality.TraitBonus += value
+			case "Strength":
+				character.Stats.Strength.TraitBonus += value
+			case "Speed":
+				character.Stats.Speed.TraitBonus += value
+			case "Durability":
+				character.Stats.Durability.TraitBonus += value
+			case "Intelligence":
+				character.Stats.Intelligence.TraitBonus += value
+			case "Mana":
+				character.Stats.Mana.TraitBonus += value
+			case "Mastery":
+				character.Stats.Mastery.TraitBonus += value
+			}
+		}
+	}
+
+	// Apply Inadequacy trait effects (these are usually negative)
+	if character.Attributes.Inadequacy.Stats_Value != nil {
+		for statName, value := range character.Attributes.Inadequacy.Stats_Value {
+			switch statName {
+			case "Vitality":
+				character.Stats.Vitality.TraitBonus += value
+			case "Strength":
+				character.Stats.Strength.TraitBonus += value
+			case "Speed":
+				character.Stats.Speed.TraitBonus += value
+			case "Durability":
+				character.Stats.Durability.TraitBonus += value
+			case "Intelligence":
+				character.Stats.Intelligence.TraitBonus += value
+			case "Mana":
+				character.Stats.Mana.TraitBonus += value
+			case "Mastery":
+				character.Stats.Mastery.TraitBonus += value
+			}
+		}
+	}
+
+	// Apply Race characteristic bonuses/penalties
+	if character.Characteristics.Race.Stats_Value != nil {
+		for statName, value := range character.Characteristics.Race.Stats_Value {
+			switch statName {
+			case "Vitality":
+				character.Stats.Vitality.TraitBonus += value
+			case "Strength":
+				character.Stats.Strength.TraitBonus += value
+			case "Speed":
+				character.Stats.Speed.TraitBonus += value
+			case "Durability":
+				character.Stats.Durability.TraitBonus += value
+			case "Intelligence":
+				character.Stats.Intelligence.TraitBonus += value
+			case "Mana":
+				character.Stats.Mana.TraitBonus += value
+			case "Mastery":
+				character.Stats.Mastery.TraitBonus += value
+			}
+		}
+	}
+
+	// Calculate total values including trait bonuses
+	character.Stats.Vitality.TotalValue = character.Stats.Vitality.Value + character.Stats.Vitality.EquipBonus + character.Stats.Vitality.TraitBonus
+	character.Stats.Strength.TotalValue = character.Stats.Strength.Value + character.Stats.Strength.EquipBonus + character.Stats.Strength.TraitBonus
+	character.Stats.Speed.TotalValue = character.Stats.Speed.Value + character.Stats.Speed.EquipBonus + character.Stats.Speed.TraitBonus
+	character.Stats.Durability.TotalValue = character.Stats.Durability.Value + character.Stats.Durability.EquipBonus + character.Stats.Durability.TraitBonus
+	character.Stats.Intelligence.TotalValue = character.Stats.Intelligence.Value + character.Stats.Intelligence.EquipBonus + character.Stats.Intelligence.TraitBonus
+	character.Stats.Mana.TotalValue = character.Stats.Mana.Value + character.Stats.Mana.EquipBonus + character.Stats.Mana.TraitBonus
+	character.Stats.Mastery.TotalValue = character.Stats.Mastery.Value + character.Stats.Mastery.EquipBonus + character.Stats.Mastery.TraitBonus
 
 	return character
 }

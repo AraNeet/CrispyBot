@@ -201,12 +201,15 @@ func GetCharacterByOwner(db *DB, ownerID string) (models.Character, error) {
 		return models.Character{}, fmt.Errorf("failed to query character: %w", err)
 	}
 
+	// Clear any existing bonuses
+	character = clearEquipmentBonuses(character)
+
+	// Apply trait bonuses first
+	character = applyTraitBonuses(character)
+
 	// Apply equipment bonuses if there's an equipped item
 	if character.EquippedWeapon.ItemKey != "" {
 		character = applyEquipmentBonuses(db, character)
-	} else {
-		// Clear any equipment bonuses if nothing is equipped
-		character = clearEquipmentBonuses(character)
 	}
 
 	return character, nil
@@ -242,12 +245,15 @@ func GetCharacter(db *DB, characterID string) (models.Character, error) {
 		return models.Character{}, fmt.Errorf("failed to query character: %w", err)
 	}
 
+	// Clear any existing bonuses
+	character = clearEquipmentBonuses(character)
+
+	// Apply trait bonuses first
+	character = applyTraitBonuses(character)
+
 	// Apply equipment bonuses if there's an equipped item
 	if character.EquippedWeapon.ItemKey != "" {
 		character = applyEquipmentBonuses(db, character)
-	} else {
-		// Clear any equipment bonuses if nothing is equipped
-		character = clearEquipmentBonuses(character)
 	}
 
 	return character, nil
