@@ -32,15 +32,15 @@ func executeAction(attacker, target *CombatParticipant, actionName string) (stri
 // physicalAttack executes a physical attack
 func physicalAttack(attacker, target *CombatParticipant) (string, error) {
 	// Initialize random number generator
-	rand.Seed(time.Now().UnixNano())
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	// Check if attack hits
 	hitChance := attacker.Accuracy
-	hitRoll := rand.Intn(100)
+	hitRoll := rng.Intn(100)
 
 	// Check for dodge
 	dodgeChance := target.DodgeChance
-	dodgeRoll := rand.Intn(100)
+	dodgeRoll := rng.Intn(100)
 
 	// If dodge successful
 	if dodgeRoll < dodgeChance {
@@ -57,7 +57,7 @@ func physicalAttack(attacker, target *CombatParticipant) (string, error) {
 
 	// Check for critical hit (base 5% chance)
 	critChance := variables.BaseCritChance
-	critRoll := rand.Intn(100)
+	critRoll := rng.Intn(100)
 	isCrit := critRoll < critChance
 
 	if isCrit {
@@ -105,15 +105,15 @@ func magicalAttack(attacker, target *CombatParticipant) (string, error) {
 	attacker.CurrentMP -= manaCost
 
 	// Initialize random number generator
-	rand.Seed(time.Now().UnixNano())
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	// Check if spell hits
 	hitChance := attacker.Accuracy - 5 // Magic is slightly harder to hit with
-	hitRoll := rand.Intn(100)
+	hitRoll := rng.Intn(100)
 
 	// Magic attacks can't be dodged as easily
 	dodgeChance := target.DodgeChance / 2
-	dodgeRoll := rand.Intn(100)
+	dodgeRoll := rng.Intn(100)
 
 	// If dodge successful
 	if dodgeRoll < dodgeChance {
@@ -130,7 +130,7 @@ func magicalAttack(attacker, target *CombatParticipant) (string, error) {
 
 	// Check for critical hit (base 5% chance)
 	critChance := variables.BaseCritChance
-	critRoll := rand.Intn(100)
+	critRoll := rng.Intn(100)
 	isCrit := critRoll < critChance
 
 	if isCrit {
@@ -175,7 +175,7 @@ func magicalAttack(attacker, target *CombatParticipant) (string, error) {
 	}
 
 	// Chance to apply status effect based on element
-	statusRoll := rand.Intn(100)
+	statusRoll := rng.Intn(100)
 	if statusRoll < 20 { // 20% chance to apply status effect
 		statusEffect := getElementalStatusEffect(attacker.Element)
 		if statusEffect != "" {

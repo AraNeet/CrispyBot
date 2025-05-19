@@ -257,11 +257,12 @@ func handlePvPBattleRequest(session *discordgo.Session, message *discordgo.Messa
 
 	// Add timeout to remove buttons after 60 seconds
 	time.AfterFunc(60*time.Second, func() {
+		content := "Battle challenge expired."
 		session.ChannelMessageEditComplex(&discordgo.MessageEdit{
 			Channel:    message.ChannelID,
 			ID:         message.ID,
-			Content:    "Battle challenge expired.",
-			Components: []discordgo.MessageComponent{},
+			Content:    &content,
+			Components: &[]discordgo.MessageComponent{},
 		})
 	})
 }
@@ -382,6 +383,9 @@ func handleCombatAction(session *discordgo.Session, message *discordgo.MessageCr
 		return
 	}
 
+	// Send the action result as a message
+	session.ChannelMessageSend(message.ChannelID, result)
+
 	// Update the battle embed
 	updateBattleEmbed(session, playerBattle)
 
@@ -408,6 +412,9 @@ func processBotTurn(session *discordgo.Session, battle *Battle) {
 		fmt.Printf("Error processing NPC turn: %v\n", err)
 		return
 	}
+
+	// Send the NPC action result
+	session.ChannelMessageSend(battle.ChannelID, result)
 
 	// Update the battle embed
 	updateBattleEmbed(session, battle)
@@ -657,7 +664,7 @@ func forfeitBattle(session *discordgo.Session, message *discordgo.MessageCreate)
 		return
 	}
 
-	// Get opponent
+	// Get opponent and set them as the winner
 	var opponentID string
 	for id := range playerBattle.Participants {
 		if id != message.Author.ID {
@@ -666,12 +673,17 @@ func forfeitBattle(session *discordgo.Session, message *discordgo.MessageCreate)
 		}
 	}
 
-	// Set opponent as winner
+	// Set player as defeated
 	playerBattle.Participants[message.Author.ID].CurrentHP = 0
 	playerBattle.State = BattleComplete
 
+	// If needed, we can explicitly set the opponent as the winner
+	// playerBattle.WinnerID = opponentID // Would need to add this field to Battle struct
+
 	// Update the battle log
-	playerBattle.Log = append(playerBattle.Log, fmt.Sprintf("%s has forfeited the battle!", playerBattle.Participants[message.Author.ID].UserName))
+	playerBattle.Log = append(playerBattle.Log, fmt.Sprintf("%s has forfeited the battle! %s wins!",
+		playerBattle.Participants[message.Author.ID].UserName,
+		playerBattle.Participants[opponentID].UserName))
 
 	// Update the battle embed
 	updateBattleEmbed(session, playerBattle)

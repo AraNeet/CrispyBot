@@ -317,7 +317,7 @@ func selectNPCAction(battle *Battle, npc *CombatParticipant) {
 
 	// Find target (the human player)
 	var targetID string
-	for id, participant := range battle.Participants {
+	for id := range battle.Participants {
 		if id != npc.DiscordID {
 			targetID = id
 			break
