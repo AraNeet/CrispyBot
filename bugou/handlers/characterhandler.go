@@ -13,7 +13,7 @@ import (
 // handleRollCommand generates a new character for the user
 func HandleRollCommand(session *discordgo.Session, message *discordgo.MessageCreate) {
 	// Get the database singleton
-	db := database.GetDB()
+	db := database.DBInit()
 
 	// Check if user already has a character
 	existingChar, err := database.GetCharacterByOwner(db, message.Author.ID)
@@ -50,7 +50,7 @@ func HandleRollCommand(session *discordgo.Session, message *discordgo.MessageCre
 // handleStatsCommand shows the user's character stats
 func HandleStatsCommand(session *discordgo.Session, message *discordgo.MessageCreate) {
 	// Get the database singleton
-	db := database.GetDB()
+	db := database.DBInit()
 
 	// Get the user's character
 	character, err := database.GetCharacterByOwner(db, message.Author.ID)
@@ -124,7 +124,7 @@ func HandleDeleteCharacterRequest(session *discordgo.Session, message *discordgo
 		// Check which button was pressed
 		if strings.HasSuffix(customID, "_confirm") {
 			// Process the deletion
-			db := database.GetDB()
+			db := database.DBInit()
 			err := database.DeleteCharacter(db, message.Author.ID)
 
 			var responseContent string

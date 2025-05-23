@@ -11,7 +11,7 @@ func CreateCharacterEmbed(character models.Character, author *discordgo.User) *d
 	// Get the character characteristics, traits, and stats
 	chars := character.Characteristics
 	stats := character.Stats
-	traits := character.Attributes
+	traits := character.Traits
 
 	// Create equipment info section
 	var equipmentInfo string
@@ -112,7 +112,7 @@ func formatStats(stats models.StatsSheets) string {
 }
 
 // formatTraits formats the character traits for display
-func formatTraits(traits models.Traits) string {
+func formatTraits(traits models.TraitsSheets) string {
 	var traitDetails string
 
 	// Format Innate trait (if not "None")

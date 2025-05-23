@@ -1,9 +1,9 @@
 package database
 
 import (
+	"CrispyBot/variables"
 	"context"
 	"fmt"
-	"os"
 	"sync"
 	"time"
 
@@ -13,9 +13,6 @@ import (
 )
 
 var (
-	mongodb_uri string = os.Getenv("MONGODB_URI")
-	db_name     string = os.Getenv("DB_NAME")
-
 	// Singleton instance of the database connection
 	instance *DB
 	once     sync.Once
@@ -28,7 +25,7 @@ type DB struct {
 }
 
 // GetDB returns the singleton database instance
-func GetDB() *DB {
+func DBInit() *DB {
 	once.Do(func() {
 		instance = connectToDB()
 	})
@@ -39,24 +36,10 @@ func GetDB() *DB {
 func connectToDB() *DB {
 	fmt.Println("Connecting to MongoDB...")
 
-	// If MONGODB_URI is not set, use a default local connection
-	if mongodb_uri == "" {
-		mongodb_uri = "mongodb://localhost:27017"
-		fmt.Println("MONGODB_URI not set, using default:", mongodb_uri)
-	} else {
-		fmt.Println("Using MONGODB_URI from environment")
-	}
-
-	// If DB name is not set, use a default
-	if db_name == "" {
-		db_name = "crispybot"
-		fmt.Println("DB name not set, using default:", db_name)
-	}
-
 	// Set up MongoDB connection options
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	opts := options.Client().
-		ApplyURI(mongodb_uri).
+		ApplyURI(variables.Mongodb_uri).
 		SetServerAPIOptions(serverAPI)
 
 	// Create a new client and connect to the server with a timeout
@@ -76,10 +59,10 @@ func connectToDB() *DB {
 		panic(fmt.Sprintf("Failed to ping MongoDB: %v", err))
 	}
 
-	fmt.Println("Successfully connected to MongoDB database:", db_name)
+	fmt.Println("Successfully connected to MongoDB database:", variables.Db_name)
 
 	// Get the database
-	database := client.Database(db_name)
+	database := client.Database(variables.Db_name)
 
 	return &DB{
 		Client:   client,

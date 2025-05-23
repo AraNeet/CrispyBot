@@ -7,23 +7,46 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// In database/models/character.go
+// Character Models
+/*
+	ID - ObjectID.
+	Owner - Owners Discord ID.
+	Chatacteristics - Character Apperance. Note: Can Boost or Nerf Stats.
+	Stats - Character Stats.
+	Traits - Positive/Negative Stats Boosts.
+	EquippedWeapon - EquippedWeapon. Note: Can Boost or Nerf Stats.
+	Level - Character level.
+	Experience - How much until next level.
+*/
 type Character struct {
 	ID              primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Owner           string             `bson:"owner" json:"owner"`
-	Characteristics Characteristics    `bson:"characteriastics" json:"characteriastics"`
-	Stats           StatsSheets        `bson:"stats" json:"stats"`
-	Attributes      Traits             `bson:"attributes" json:"attributes"`
-	EquippedWeapon  EquippedItem       `bson:"equippedWeapon" json:"equippedWeapon"`
-	Level           int                `bson:"level" json:"level"`           // New field for level
-	Experience      int                `bson:"experience" json:"experience"` // New field for XP
+	Owner           string             `bson:"Owner" json:"owner"`
+	Characteristics Characteristics    `bson:"Characteriastics" json:"characteriastics"`
+	Stats           StatsSheets        `bson:"Stats" json:"stats"`
+	Traits          TraitsSheets       `bson:"Traits" json:"traits"`
+	EquippedWeapon  EquippedItem       `bson:"EquippedWeapon" json:"equippedWeapon"`
+	Level           int                `bson:"Level" json:"level"`
+	Experience      int                `bson:"Experience" json:"experience"`
 }
 
+// Equipped Item Model
+/*
+	ItemKey - Unique identifier/key for the item type.
+	ItemName - Display name of the equipped item.
+*/
 type EquippedItem struct {
 	ItemKey  string `bson:"itemKey" json:"itemKey"`
 	ItemName string `bson:"itemName" json:"itemName"`
 }
 
+// Item Record Model
+/*
+	ID - ObjectID for the item record.
+	OwnerID - Discord ID of the item owner.
+	InventoryKey - Unique key identifying this item in inventory.
+	Item - The actual item data/properties.
+	Timestamp - When this item was created/acquired.
+*/
 type ItemRecord struct {
 	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	OwnerID      string             `bson:"ownerID" json:"ownerID"`
@@ -32,50 +55,96 @@ type ItemRecord struct {
 	Timestamp    time.Time          `bson:"timestamp" json:"timestamp"`
 }
 
+// Stats Sheets Model
+/*
+	Vitality - Health/HP related stat.
+	Durability - Defense/resistance stat.
+	Speed - Movement/agility stat.
+	Strength - Physical damage stat.
+	Intelligence - Magical damage/wisdom stat.
+	Mana - Magic points/energy stat.
+	Mastery - Skill proficiency stat.
+*/
 type StatsSheets struct {
-	Vitality     Stat `bson:"vitality" json:"vitality"`
-	Durability   Stat `bson:"durability" json:"durability"`
-	Speed        Stat `bson:"speed" json:"speed"`
-	Strength     Stat `bson:"strength" json:"strength"`
-	Intelligence Stat `bson:"intelligence" json:"intelligence"`
-	Mana         Stat `bson:"Mana" json:"Mana"`
-	Mastery      Stat `bson:"mastery" json:"mastery"`
+	Vitality     Stat `bson:"Vitality" json:"vitality"`
+	Durability   Stat `bson:"Durability" json:"durability"`
+	Speed        Stat `bson:"Speed" json:"speed"`
+	Strength     Stat `bson:"Strength" json:"strength"`
+	Intelligence Stat `bson:"Intelligence" json:"intelligence"`
+	Mana         Stat `bson:"Mana" json:"mana"`
+	Mastery      Stat `bson:"Mastery" json:"mastery"`
 }
 
-type Traits struct {
-	Innate     Trait `bson:"trait" json:"trait"`
-	Inadequacy Trait `bson:"weakness" json:"weakness"`
-	X_Factor   Trait `bson:"xFactor" json:"xFactor"`
+// Traits Sheets Model
+/*
+	Innate - Natural/born trait. Note: Usually positive modifiers.
+	Inadequacy - Weakness/flaw trait. Note: Usually negative modifiers.
+	X_Factor - Special/unique trait. Note: Can be positive or negative.
+*/
+type TraitsSheets struct {
+	Innate     Trait `bson:"Innate" json:"innate"`
+	Inadequacy Trait `bson:"Inadequacy" json:"inadequacy"`
+	X_Factor   Trait `bson:"XFactor" json:"xfactor"`
 }
 
-// Update Characteristics to explicitly include Height
+// Characteristics Model
+/*
+	Race - Character's race/species. Note: Affects base stats.
+	Alignment - Moral/ethical alignment. Note: May affect certain interactions.
+	Element - Elemental affinity. Note: Affects damage types and resistances.
+	Height - Physical height characteristic. Note: May affect certain stats.
+*/
 type Characteristics struct {
 	Race      Characteristic `bson:"race" json:"race"`
 	Alignment Characteristic `bson:"alignment" json:"alignment"`
 	Element   Characteristic `bson:"element" json:"element"`
-	Height    Characteristic `bson:"height" json:"height"` // Add Height field
+	Height    Characteristic `bson:"height" json:"height"`
 }
 
+// Individual Stat Model
+/*
+	Rarity - Rarity level of the stat (common, rare, epic, etc.).
+	Stat_Name - Display name of the stat.
+	Type - Stat type from variables enum.
+	Value - Base stat value.
+	EquipBonus - Bonus from equipped items.
+	TraitBonus - Bonus from character traits.
+	TotalValue - Final calculated stat value. Note: Sum of Value + EquipBonus + TraitBonus.
+*/
 type Stat struct {
-	Rarity     string             `bson:"rarity" json:"rarity"`
-	Stat_Name  string             `bson:"statName" json:"statName"`
-	Type       variables.StatType `bson:"type" json:"type"`
-	Value      int                `bson:"value" json:"value"`
-	EquipBonus int                `bson:"equipBonus" json:"equipBonus"`
-	TraitBonus int                `json:"traitBonus"` // New field for trait bonuses (not stored in DB)
-	TotalValue int                `bson:"totalValue" json:"totalValue"`
+	Rarity     string             `bson:"Rarity" json:"rarity"`
+	Stat_Name  string             `bson:"StatName" json:"statName"`
+	Type       variables.StatType `bson:"Type" json:"type"`
+	Value      int                `bson:"Value" json:"value"`
+	EquipBonus int                `bson:"EquipBonus" json:"equipBonus"`
+	TraitBonus int                `json:"TraitBonus"`
+	TotalValue int                `bson:"TotalValue" json:"totalValue"`
 }
 
+// Individual Trait Model
+/*
+	Rarity - Rarity level of the trait.
+	Trait_Name - Display name of the trait.
+	Type - Trait type from variables enum.
+	Stats_Value - Map of stat modifications. Note: Key is stat name, value is modifier amount.
+*/
 type Trait struct {
-	Rarity      string              `bson:"rarity" json:"rarity"`
-	Trait_Name  string              `bson:"traitName" json:"traitName"`
-	Type        variables.TraitType `bson:"type" json:"type"`
-	Stats_Value map[string]int      `bson:"statsValue" json:"statsValue"`
+	Rarity      string              `bson:"Rarity" json:"rarity"`
+	Trait_Name  string              `bson:"TraitName" json:"traitName"`
+	Type        variables.TraitType `bson:"Type" json:"type"`
+	Stats_Value map[string]int      `bson:"StatsValue" json:"statsValue"`
 }
 
+// Individual Characteristic Model
+/*
+	Rarity - Rarity level of the characteristic.
+	Trait_Name - Display name of the characteristic.
+	Type - Characteristic type from variables enum.
+	Stats_Value - Map of stat modifications. Note: Key is stat name, value is modifier amount.
+*/
 type Characteristic struct {
-	Rarity      string                       `bson:"rarity" json:"rarity"`
-	Trait_Name  string                       `bson:"CharacteristicsName" json:"CharacteristicsName"`
-	Type        variables.CharacteristicType `bson:"type" json:"type"`
-	Stats_Value map[string]int               `bson:"statsValue" json:"statsValue"`
+	Rarity      string                       `bson:"Rarity" json:"rarity"`
+	Trait_Name  string                       `bson:"CharacteristicsName" json:"characteristicsName"`
+	Type        variables.CharacteristicType `bson:"Type" json:"type"`
+	Stats_Value map[string]int               `bson:"StatsValue" json:"statsValue"`
 }

@@ -15,7 +15,7 @@ import (
 // HandleFullRerollCommand completely rerolls a user's character
 func HandleFullRerollCommand(session *discordgo.Session, message *discordgo.MessageCreate) {
 	// Get the database singleton
-	db := database.GetDB()
+	db := database.DBInit()
 
 	// Use one full reroll
 	remainingRerolls, err := database.UseFullReroll(db, message.Author.ID)
@@ -82,7 +82,7 @@ func HandleStatRerollCommand(session *discordgo.Session, message *discordgo.Mess
 	}
 
 	// Get the database singleton
-	db := database.GetDB()
+	db := database.DBInit()
 
 	// Use a stat reroll
 	remainingRerolls, err := database.UseStatReroll(db, message.Author.ID)
@@ -171,7 +171,7 @@ func HandleStatRerollCommand(session *discordgo.Session, message *discordgo.Mess
 // HandleRerollStatusCommand shows remaining rerolls for the day
 func HandleRerollStatusCommand(session *discordgo.Session, message *discordgo.MessageCreate) {
 	// Get the database singleton
-	db := database.GetDB()
+	db := database.DBInit()
 
 	// Get the user
 	user, err := database.GetUserByID(db, message.Author.ID)

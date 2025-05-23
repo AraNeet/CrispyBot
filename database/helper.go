@@ -164,8 +164,8 @@ func clearEquipmentBonuses(character models.Character) models.Character {
 // applyTraitBonuses applies trait bonuses (innate and inadequacy) to character stats
 func applyTraitBonuses(character models.Character) models.Character {
 	// Apply Innate trait bonuses
-	if character.Attributes.Innate.Stats_Value != nil {
-		for statName, value := range character.Attributes.Innate.Stats_Value {
+	if character.Traits.Innate.Stats_Value != nil {
+		for statName, value := range character.Traits.Innate.Stats_Value {
 			switch statName {
 			case "Vitality":
 				character.Stats.Vitality.TraitBonus += value
@@ -186,8 +186,8 @@ func applyTraitBonuses(character models.Character) models.Character {
 	}
 
 	// Apply Inadequacy trait effects (these are usually negative)
-	if character.Attributes.Inadequacy.Stats_Value != nil {
-		for statName, value := range character.Attributes.Inadequacy.Stats_Value {
+	if character.Traits.Inadequacy.Stats_Value != nil {
+		for statName, value := range character.Traits.Inadequacy.Stats_Value {
 			switch statName {
 			case "Vitality":
 				character.Stats.Vitality.TraitBonus += value

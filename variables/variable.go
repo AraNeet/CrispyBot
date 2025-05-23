@@ -7,5 +7,7 @@ import (
 )
 
 var (
-	Bottoken string = os.Getenv("BOTTOKEN")
+	Bottoken    string = os.Getenv("BOTTOKEN")
+	Mongodb_uri string = os.Getenv("MONGODB_URI")
+	Db_name     string = os.Getenv("DB_NAME")
 )

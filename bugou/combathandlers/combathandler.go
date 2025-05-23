@@ -71,7 +71,7 @@ func HandleBattleCommand(session *discordgo.Session, message *discordgo.MessageC
 // handleNPCBattle starts a battle with an NPC
 func handleNPCBattle(session *discordgo.Session, message *discordgo.MessageCreate, npcName string, difficulty int) {
 	// Get the database singleton
-	db := database.GetDB()
+	db := database.DBInit()
 
 	// Get user's character
 	character, err := database.GetCharacterByOwner(db, message.Author.ID)
@@ -130,7 +130,7 @@ func handleNPCBattle(session *discordgo.Session, message *discordgo.MessageCreat
 // handlePvPBattleRequest sends a battle challenge to another player
 func handlePvPBattleRequest(session *discordgo.Session, message *discordgo.MessageCreate, targetID string) {
 	// Get the database singleton
-	db := database.GetDB()
+	db := database.DBInit()
 
 	// Check if target is valid
 	_, err := database.GetCharacterByOwner(db, targetID)
@@ -270,7 +270,7 @@ func handlePvPBattleRequest(session *discordgo.Session, message *discordgo.Messa
 // startPvPBattle creates a battle between two players
 func startPvPBattle(session *discordgo.Session, player1ID, player2ID, channelID, messageID string) {
 	// Get the database singleton
-	db := database.GetDB()
+	db := database.DBInit()
 
 	// Get both characters
 	char1, err1 := database.GetCharacterByOwner(db, player1ID)
@@ -577,7 +577,7 @@ func handleBattleCompletion(session *discordgo.Session, battle *Battle, battleID
 	}
 
 	// Award experience and currency to winner
-	db := database.GetDB()
+	db := database.DBInit()
 
 	// Only process rewards for human players (not NPCs)
 	if !strings.HasPrefix(result.Winner, "npc_") {

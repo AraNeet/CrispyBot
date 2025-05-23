@@ -24,7 +24,7 @@ func GenerateCharacter(ownerID string) models.Character {
 	character := models.Character{
 		Owner:           ownerID,
 		Stats:           stats,
-		Attributes:      traits,
+		Traits:          traits,
 		Characteristics: characteristics,
 		Level:           1, // Start at level 1
 		Experience:      0, // Start with 0 XP
@@ -156,7 +156,7 @@ func getStatBaseValue(statType variables.StatType, statName string) int {
 }
 
 // Generate character traits (innate, inadequacy, x-factor)
-func generateTraits(rng *rand.Rand) models.Traits {
+func generateTraits(rng *rand.Rand) models.TraitsSheets {
 	// Generate innate trait (buff)
 	innateTrait := generateInnateTrait(rng)
 
@@ -166,7 +166,7 @@ func generateTraits(rng *rand.Rand) models.Traits {
 	// Generate x-factor trait
 	xFactorTrait := generateXFactorTrait(rng)
 
-	return models.Traits{
+	return models.TraitsSheets{
 		Innate:     innateTrait,
 		Inadequacy: inadequacyTrait,
 		X_Factor:   xFactorTrait,

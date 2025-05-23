@@ -11,7 +11,7 @@ import (
 
 func main() {
 	// Initialize the database connection - this creates the singleton instance
-	db := database.GetDB()
+	db := database.DBInit()
 	defer db.Close()
 
 	fmt.Println("Starting CrispyBot...")

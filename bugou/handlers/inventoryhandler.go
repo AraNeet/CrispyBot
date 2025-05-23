@@ -10,7 +10,7 @@ import (
 // HandleInventoryCommand displays the user's inventory
 func HandleInventoryCommand(session *discordgo.Session, message *discordgo.MessageCreate) {
 	// Get the database singleton
-	db := database.GetDB()
+	db := database.DBInit()
 
 	// Get user info
 	user, err := database.GetUserByID(db, message.Author.ID)

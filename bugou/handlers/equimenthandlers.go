@@ -19,7 +19,7 @@ func HandleEquipCommand(session *discordgo.Session, message *discordgo.MessageCr
 	itemKey := "weapon_" + args[2]
 
 	// Get the database singleton
-	db := database.GetDB()
+	db := database.DBInit()
 
 	// Get user info
 	user, err := database.GetUserByID(db, message.Author.ID)
@@ -75,7 +75,7 @@ func HandleEquipCommand(session *discordgo.Session, message *discordgo.MessageCr
 // HandleUnequipCommand removes the currently equipped item
 func HandleUnequipCommand(session *discordgo.Session, message *discordgo.MessageCreate) {
 	// Get the database singleton
-	db := database.GetDB()
+	db := database.DBInit()
 
 	// Get character info to check if there's an equipped weapon
 	character, err := database.GetCharacterByOwner(db, message.Author.ID)

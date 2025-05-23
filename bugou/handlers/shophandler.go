@@ -12,7 +12,7 @@ import (
 // HandleShopCommand displays the current shop inventory
 func HandleShopCommand(session *discordgo.Session, message *discordgo.MessageCreate) {
 	// Get the database singleton
-	db := database.GetDB()
+	db := database.DBInit()
 
 	// Get the current shop
 	shop, err := database.GetShop(db)
@@ -76,7 +76,7 @@ func HandleBuyCommand(session *discordgo.Session, message *discordgo.MessageCrea
 	}
 
 	// Get the database singleton
-	db := database.GetDB()
+	db := database.DBInit()
 
 	// Process the purchase
 	item, err := database.BuyItem(db, message.Author.ID, itemIdx)
@@ -110,7 +110,7 @@ func HandleBuyCommand(session *discordgo.Session, message *discordgo.MessageCrea
 // HandleWalletCommand shows a user's currency balance
 func HandleWalletCommand(session *discordgo.Session, message *discordgo.MessageCreate) {
 	// Get the database singleton
-	db := database.GetDB()
+	db := database.DBInit()
 
 	// Initialize wallet if needed
 	err := database.InitializeUserWallet(db, message.Author.ID, 500)
@@ -154,7 +154,7 @@ func HandleWalletCommand(session *discordgo.Session, message *discordgo.MessageC
 // HandleDailyCommand gives the user their daily currency reward
 func HandleDailyCommand(session *discordgo.Session, message *discordgo.MessageCreate) {
 	// Get the database singleton
-	db := database.GetDB()
+	db := database.DBInit()
 
 	// TODO: Implement daily reward cooldown
 	// For now, just give 100 coins every time
